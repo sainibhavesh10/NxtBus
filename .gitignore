@@ -1,0 +1,22 @@
+.env
+
+# GTFS data files - too large / local only
+data/
+
+# Java
+target/
+*.class
+
+# IntelliJ
+.idea/
+*.iml
+
+# VS Code
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
