@@ -16,8 +16,8 @@ public interface StopTimeRepository extends JpaRepository<StopTime, StopTime.Sto
         FROM gtfs_stop_times st
         JOIN gtfs_trips t  ON t.trip_id = st.trip_id
         JOIN gtfs_routes r ON r.route_id = t.route_id
-        JOIN trip_service_dates tsd ON tsd.trip_id = st.trip_id AND tsd.date = CURRENT_DATE
-        WHERE st.stop_id = :stopId AND tsd.running = TRUE AND st.departure_time >= :afterSeconds
+        JOIN trip_run_date trd ON trd.trip_id = st.trip_id AND trd.date = CURRENT_DATE
+        WHERE st.stop_id = :stopId AND trd.running = TRUE AND st.departure_time >= :afterSeconds
         ORDER BY st.departure_time
         LIMIT :limitRows
         """, nativeQuery = true)
@@ -35,8 +35,8 @@ public interface StopTimeRepository extends JpaRepository<StopTime, StopTime.Sto
           FROM gtfs_stop_times st
           JOIN gtfs_trips t  ON t.trip_id = st.trip_id
           JOIN gtfs_routes r ON r.route_id = t.route_id
-          JOIN trip_service_dates tsd ON tsd.trip_id = st.trip_id AND tsd.date = CURRENT_DATE
-          WHERE st.stop_id = :stopId AND tsd.running = TRUE AND st.departure_time >= :afterSeconds
+          JOIN trip_run_date trd ON trd.trip_id = st.trip_id AND trd.date = CURRENT_DATE
+          WHERE st.stop_id = :stopId AND trd.running = TRUE AND st.departure_time >= :afterSeconds
         )
         UNION ALL
         (
@@ -46,8 +46,8 @@ public interface StopTimeRepository extends JpaRepository<StopTime, StopTime.Sto
           FROM gtfs_stop_times st
           JOIN gtfs_trips t  ON t.trip_id = st.trip_id
           JOIN gtfs_routes r ON r.route_id = t.route_id
-          JOIN trip_service_dates tsd ON tsd.trip_id = st.trip_id AND tsd.date = CURRENT_DATE - 1
-          WHERE st.stop_id = :stopId AND tsd.running = TRUE AND st.departure_time >= :afterSeconds + 86400
+          JOIN trip_run_date trd ON trd.trip_id = st.trip_id AND trd.date = CURRENT_DATE - 1
+          WHERE st.stop_id = :stopId AND trd.running = TRUE AND st.departure_time >= :afterSeconds + 86400
         )
         ORDER BY sortKey
         LIMIT :limitRows
