@@ -203,7 +203,7 @@ ON gtfs_trip_dates (date);
 -- against THIS table — never gtfs_calendar / gtfs_calendar_dates /
 -- gtfs_trip_dates directly at request time.
 -- ============================================================
-CREATE TABLE IF NOT EXISTS trip_service_dates (
+CREATE TABLE IF NOT EXISTS trip_run_date (
     trip_id  TEXT NOT NULL REFERENCES gtfs_trips (trip_id),
     date     DATE NOT NULL,
     running  BOOLEAN NOT NULL,
@@ -211,6 +211,6 @@ CREATE TABLE IF NOT EXISTS trip_service_dates (
     PRIMARY KEY (trip_id, date)
 );
 
-CREATE INDEX IF NOT EXISTS idx_trip_service_dates_date_running
-ON trip_service_dates (date, trip_id)
+CREATE INDEX IF NOT EXISTS idx_trip_run_date_date_running
+ON trip_run_date (date, trip_id)
 WHERE running = TRUE;
