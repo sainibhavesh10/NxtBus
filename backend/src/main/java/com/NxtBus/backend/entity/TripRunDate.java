@@ -7,10 +7,10 @@ import java.io.Serializable;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "trip_service_dates")
-@IdClass(TripServiceDate.TripServiceDateId.class)
+@Table(name = "trip_run_date")
+@IdClass(TripRunDate.TripRunDateId.class)
 @Getter @Setter @NoArgsConstructor
-public class TripServiceDate {
+public class TripRunDate {
     @Id private String tripId;
     @Id private LocalDate date;
 
@@ -18,7 +18,7 @@ public class TripServiceDate {
     private Boolean running;
 
     @Data @NoArgsConstructor @AllArgsConstructor
-    public static class TripServiceDateId implements Serializable {
+    public static class TripRunDateId implements Serializable {
         private String tripId;
         private LocalDate date;
     }
