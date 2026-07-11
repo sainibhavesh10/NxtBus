@@ -48,14 +48,17 @@ ON gtfs_calendar (agency_id);
 
 -- ============================================================
 -- CALENDAR_DATES (service-level exceptions: holidays, special runs)
--- No FK on service_id — GTFS allows a service_id to exist ONLY here.
 -- ============================================================
 CREATE TABLE IF NOT EXISTS gtfs_calendar_dates (
     service_id      TEXT NOT NULL,
     date            DATE NOT NULL,
     exception_type  SMALLINT NOT NULL CHECK (exception_type IN (1, 2)), -- 1=added, 2=removed
 
-    PRIMARY KEY (service_id, date)
+    PRIMARY KEY (service_id, date),
+
+    CONSTRAINT fk_gtfs_calendar_dates_calendar
+            FOREIGN KEY (service_id)
+            REFERENCES gtfs_calendar (service_id)
 );
 
 CREATE INDEX IF NOT EXISTS idx_gtfs_calendar_dates_service
