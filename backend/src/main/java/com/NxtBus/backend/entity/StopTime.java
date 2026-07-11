@@ -6,7 +6,7 @@ import lombok.*;
 import java.io.Serializable;
 
 @Entity
-@Table(name = "gtfs_stop_times")
+@Table(name = "stop_times")
 @IdClass(StopTime.StopTimeId.class)
 @Getter @Setter @NoArgsConstructor
 public class StopTime {

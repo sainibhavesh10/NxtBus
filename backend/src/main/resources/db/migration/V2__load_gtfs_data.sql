@@ -1,5 +1,5 @@
 -- ============================================================
--- NxtBus — GTFS data load (Flyway-compatible version)
+-- NxtBus —  data load (Flyway-compatible version)
 --
 -- FIX: the previous version used `\copy`, which is a psql CLIENT
 -- meta-command — it is not SQL. It only exists inside the interactive
@@ -42,7 +42,7 @@
 -- ============================================================
 
 -- ---------- AGENCY ----------
-COPY gtfs_agency (agency_id, agency_name, agency_url, agency_timezone, agency_lang, agency_phone, agency_fare_url)
+COPY agency (agency_id, agency_name, agency_url, agency_timezone, agency_lang, agency_phone, agency_fare_url)
 FROM '/gtfs/agency.txt' WITH (FORMAT csv, HEADER true, NULL '');
 
 -- ---------- CALENDAR ----------
@@ -66,7 +66,7 @@ CREATE TEMP TABLE staging_calendar (
 COPY staging_calendar (start_date, end_date, monday, tuesday, wednesday, thursday, friday, saturday, sunday, service_id)
 FROM '/gtfs/calendar.txt' WITH (FORMAT csv, HEADER true, NULL '');
 
-INSERT INTO gtfs_calendar (service_id,agency_id,start_date,end_date,monday,tuesday,wednesday,thursday,friday,saturday,sunday)
+INSERT INTO calendar (service_id,agency_id,start_date,end_date,monday,tuesday,wednesday,thursday,friday,saturday,sunday)
 SELECT
     service_id,
     'DIMTS',
@@ -83,18 +83,18 @@ FROM staging_calendar;
 
 -- ---------- ROUTES ----------
 -- routes.txt only has 5 of the 7 schema columns (no route_color/route_text_color) — they load as NULL.
-COPY gtfs_routes (agency_id, route_id, route_long_name, route_short_name, route_type)
+COPY routes (agency_id, route_id, route_long_name, route_short_name, route_type)
 FROM '/gtfs/routes.txt' WITH (FORMAT csv, HEADER true, NULL '');
 
 -- ---------- STOPS ----------
 -- stops.txt column order differs from the table; geom is a GENERATED column
 -- so it must NOT appear in the copy list (Postgres computes it from lat/lon).
-COPY gtfs_stops (stop_code, stop_id, stop_lat, stop_lon, stop_name, zone_id)
+COPY stops (stop_code, stop_id, stop_lat, stop_lon, stop_name, zone_id)
 FROM '/gtfs/stops.txt' WITH (FORMAT csv, HEADER true, NULL '');
 
 -- ---------- TRIPS ----------
 -- trips.txt only has 4 of the 7 schema columns (no trip_headsign/direction_id/block_id) — NULL.
-COPY gtfs_trips (route_id, service_id, trip_id, shape_id)
+COPY trips (route_id, service_id, trip_id, shape_id)
 FROM '/gtfs/trips.txt' WITH (FORMAT csv, HEADER true, NULL '');
 
 
@@ -132,7 +132,7 @@ BEGIN
     END IF;
 END $$;
 
-INSERT INTO gtfs_stop_times (trip_id, stop_sequence, stop_id, arrival_time, departure_time)
+INSERT INTO stop_times (trip_id, stop_sequence, stop_id, arrival_time, departure_time)
 SELECT
     trip_id,
     stop_sequence,
@@ -141,21 +141,21 @@ SELECT
     split_part(departure_time, ':', 1)::int * 3600 + split_part(departure_time, ':', 2)::int * 60 + split_part(departure_time, ':', 3)::int
 FROM stg_stop_times;
 
-TRUNCATE stg_stop_times;  -- drop the raw text copy now that it's transformed into gtfs_stop_times
+TRUNCATE stg_stop_times;  -- drop the raw text copy now that it's transformed into stop_times
 
 
 -- ============================================================
 -- POST-LOAD VERIFICATION
 -- ============================================================
-SELECT 'gtfs_agency'      AS table_name, count(*) FROM gtfs_agency
-UNION ALL SELECT 'gtfs_calendar',   count(*) FROM gtfs_calendar
-UNION ALL SELECT 'gtfs_routes',     count(*) FROM gtfs_routes
-UNION ALL SELECT 'gtfs_stops',      count(*) FROM gtfs_stops
-UNION ALL SELECT 'gtfs_trips',      count(*) FROM gtfs_trips
-UNION ALL SELECT 'gtfs_stop_times', count(*) FROM gtfs_stop_times;
+SELECT 'agency'      AS table_name, count(*) FROM agency
+UNION ALL SELECT 'calendar',   count(*) FROM calendar
+UNION ALL SELECT 'routes',     count(*) FROM routes
+UNION ALL SELECT 'stops',      count(*) FROM stops
+UNION ALL SELECT 'trips',      count(*) FROM trips
+UNION ALL SELECT 'stop_times', count(*) FROM stop_times;
 
 -- Should return 0 rows — any orphaned trip references in stop_times
-SELECT st.trip_id, st.stop_sequence FROM gtfs_stop_times st
-LEFT JOIN gtfs_trips t ON t.trip_id = st.trip_id
+SELECT st.trip_id, st.stop_sequence FROM stop_times st
+LEFT JOIN trips t ON t.trip_id = st.trip_id
 WHERE t.trip_id IS NULL
 LIMIT 20;

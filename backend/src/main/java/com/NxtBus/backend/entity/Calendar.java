@@ -6,7 +6,7 @@ import lombok.*;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "gtfs_calendar")
+@Table(name = "calendar")
 @Getter
 @Setter @NoArgsConstructor
 public class Calendar {

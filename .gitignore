@@ -1,6 +1,6 @@
 .env
 
-# GTFS data files - too large / local only
+#  data files - too large / local only
 data/
 
 # Java

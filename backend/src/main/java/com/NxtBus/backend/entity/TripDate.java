@@ -7,7 +7,7 @@ import java.io.Serializable;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "gtfs_trip_dates")
+@Table(name = "trip_dates")
 @IdClass(TripDate.TripDateId.class)
 @Getter @Setter @NoArgsConstructor
 public class TripDate {

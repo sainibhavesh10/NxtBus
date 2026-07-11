@@ -20,9 +20,9 @@ public interface StopTimeRepository extends JpaRepository<StopTime, StopTime.Sto
                  COALESCE(NULLIF(r.route_short_name, ''), r.route_long_name) AS routeName,
                  t.trip_headsign AS tripHeadsign,
                  (st.departure_time - :afterSeconds) / 60 AS minutesFromNow
-          FROM gtfs_stop_times st
-          JOIN gtfs_trips t  ON t.trip_id = st.trip_id
-          JOIN gtfs_routes r ON r.route_id = t.route_id
+          FROM stop_times st
+          JOIN trips t  ON t.trip_id = st.trip_id
+          JOIN routes r ON r.route_id = t.route_id
           JOIN trip_run_date trd ON trd.trip_id = st.trip_id AND trd.date = :date
           WHERE st.stop_id = :stopId AND trd.running = TRUE AND st.departure_time >= :afterSeconds
           ORDER BY st.departure_time
@@ -37,9 +37,9 @@ public interface StopTimeRepository extends JpaRepository<StopTime, StopTime.Sto
                  COALESCE(NULLIF(r.route_short_name, ''), r.route_long_name) AS routeName,
                  t.trip_headsign AS tripHeadsign,
                  (st.departure_time - 86400 - :afterSeconds) / 60 AS minutesFromNow
-          FROM gtfs_stop_times st
-          JOIN gtfs_trips t  ON t.trip_id = st.trip_id
-          JOIN gtfs_routes r ON r.route_id = t.route_id
+          FROM stop_times st
+          JOIN trips t  ON t.trip_id = st.trip_id
+          JOIN routes r ON r.route_id = t.route_id
           JOIN trip_run_date trd ON trd.trip_id = st.trip_id AND trd.date = :previousDate
           WHERE st.stop_id = :stopId AND trd.running = TRUE AND st.departure_time >= :afterSeconds + 86400
           ORDER BY st.departure_time

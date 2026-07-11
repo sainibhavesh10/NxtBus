@@ -16,7 +16,7 @@ public interface StopRepository   extends JpaRepository<Stop, String> {
            stop_lat AS stopLat, stop_lon AS stopLon, meters AS distanceMeters 
     FROM (
         SELECT s.*, ST_Distance(s.geom::geography, ST_SetSRID(ST_MakePoint(:lon, :lat), 4326)::geography) AS meters
-        FROM gtfs_stops s
+        FROM stops s
         ORDER BY s.geom <-> ST_SetSRID(ST_MakePoint(:lon, :lat), 4326)
         LIMIT :candidatePoolSize
     ) candidates
@@ -35,7 +35,7 @@ public interface StopRepository   extends JpaRepository<Stop, String> {
                 stop_lat  AS stopLat,
                 stop_lon  AS stopLon,
                 zone_id as zoneId
-            FROM gtfs_stops
+            FROM stops
             WHERE stop_name ILIKE '%' || :query || '%'
                OR stop_name % :query
             ORDER BY

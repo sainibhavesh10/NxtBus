@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "gtfs_trips")
+@Table(name = "trips")
 @Getter @Setter @NoArgsConstructor
 public class Trip {
     @Id
