@@ -12,8 +12,8 @@ WITH ordered_stops AS (
         COUNT(*) OVER (
             PARTITION BY st.trip_id
         ) AS total_stops
-    FROM gtfs_stop_times st
-    JOIN gtfs_stops s ON s.stop_id = st.stop_id
+    FROM stop_times st
+    JOIN stops s ON s.stop_id = st.stop_id
 ),
 trip_points AS (
     SELECT
@@ -43,7 +43,7 @@ generated_headsigns AS (
         END AS new_trip_headsign
     FROM trip_points
 )
-UPDATE gtfs_trips t
+UPDATE trips t
 SET trip_headsign = g.new_trip_headsign
 FROM generated_headsigns g
 WHERE t.trip_id = g.trip_id
@@ -54,7 +54,7 @@ WHERE t.trip_id = g.trip_id
 
 -- Check result before saving
 SELECT trip_id, trip_headsign
-FROM gtfs_trips
+FROM trips
 ORDER BY trip_id
 LIMIT 100;
 

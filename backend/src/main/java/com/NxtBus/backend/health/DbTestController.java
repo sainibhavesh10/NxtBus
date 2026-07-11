@@ -20,14 +20,14 @@ public class DbTestController {
     public Map<String, Object> testDatabaseConnection() {
 
         Long stopCount = jdbcTemplate.queryForObject(
-                "SELECT COUNT(*) FROM gtfs_stops",
+                "SELECT COUNT(*) FROM stops",
                 Long.class
         );
 
         List<Map<String, Object>> sampleStops = jdbcTemplate.queryForList(
                 """
                 SELECT stop_id, stop_name, stop_lat, stop_lon
-                FROM gtfs_stops
+                FROM stops
                 LIMIT 5
                 """
         );
