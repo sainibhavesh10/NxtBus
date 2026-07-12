@@ -159,3 +159,6 @@ SELECT st.trip_id, st.stop_sequence FROM stop_times st
 LEFT JOIN trips t ON t.trip_id = st.trip_id
 WHERE t.trip_id IS NULL
 LIMIT 20;
+
+UPDATE routes
+SET route_short_name = route_long_name;
