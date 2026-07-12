@@ -10,7 +10,7 @@ DECLARE
 BEGIN
     -- 1. Trip-level exception wins over everything
     SELECT exception_type INTO v_trip_exc
-    FROM gtfs_trip_dates
+    FROM trip_dates
     WHERE trip_id = p_trip_id AND date = p_date;
 
     IF v_trip_exc IS NOT NULL THEN
@@ -19,11 +19,11 @@ BEGIN
 
     -- 2. Service-level exception
     SELECT service_id INTO v_service_id
-    FROM gtfs_trips
+    FROM trips
     WHERE trip_id = p_trip_id;
 
     SELECT exception_type INTO v_service_exc
-    FROM gtfs_calendar_dates
+    FROM calendar_dates
     WHERE service_id = v_service_id AND date = p_date;
 
     IF v_service_exc IS NOT NULL THEN
@@ -32,7 +32,7 @@ BEGIN
 
     -- 3. Weekly recurring pattern
     SELECT * INTO v_cal
-    FROM gtfs_calendar
+    FROM calendar
     WHERE service_id = v_service_id;
 
     IF v_cal IS NULL OR p_date < v_cal.start_date OR p_date > v_cal.end_date THEN
@@ -82,7 +82,7 @@ $$;
 
 
 -- Full refresh for all trips for the 31-day window.
--- Use after big GTFS/calendar changes.
+-- Use after big /calendar changes.
 CREATE OR REPLACE PROCEDURE refresh_trip_run_date()
 LANGUAGE plpgsql
 AS $$
@@ -95,7 +95,7 @@ BEGIN
         t.trip_id,
         d.gen_date,
         is_trip_running(t.trip_id, d.gen_date)
-    FROM gtfs_trips t
+    FROM trips t
     CROSS JOIN run_date_window() d
     ON CONFLICT (trip_id, date)
     DO UPDATE SET running = EXCLUDED.running;
@@ -104,7 +104,7 @@ $$;
 
 
 -- Refresh all trips of one service_id for the full 31-day window.
--- Use after changing gtfs_calendar weekly pattern/start_date/end_date.
+-- Use after changing calendar weekly pattern/start_date/end_date.
 CREATE OR REPLACE PROCEDURE refresh_trip_run_date_for_calendar(p_service_id TEXT)
 LANGUAGE plpgsql
 AS $$
@@ -114,7 +114,7 @@ BEGIN
         t.trip_id,
         d.gen_date,
         is_trip_running(t.trip_id, d.gen_date)
-    FROM gtfs_trips t
+    FROM trips t
     CROSS JOIN run_date_window() d
     WHERE t.service_id = p_service_id
     ON CONFLICT (trip_id, date)
@@ -124,7 +124,7 @@ $$;
 
 
 -- Refresh all trips of one service_id for one date.
--- Use after changing gtfs_calendar_dates for a service/date.
+-- Use after changing calendar_dates for a service/date.
 CREATE OR REPLACE PROCEDURE refresh_trip_run_date_for_calendar_date(
     p_service_id TEXT,
     p_date DATE
@@ -141,7 +141,7 @@ BEGIN
         t.trip_id,
         p_date,
         is_trip_running(t.trip_id, p_date)
-    FROM gtfs_trips t
+    FROM trips t
     WHERE t.service_id = p_service_id
     ON CONFLICT (trip_id, date)
     DO UPDATE SET running = EXCLUDED.running;
@@ -163,7 +163,7 @@ BEGIN
         t.trip_id,
         d.gen_date,
         is_trip_running(t.trip_id, d.gen_date)
-    FROM gtfs_trips t
+    FROM trips t
     CROSS JOIN run_date_window() d
     WHERE t.trip_id = p_trip_id;
 END;
@@ -171,7 +171,7 @@ $$;
 
 
 -- Refresh one trip on one date.
--- Use after changing gtfs_trip_dates for a trip/date.
+-- Use after changing trip_dates for a trip/date.
 CREATE OR REPLACE PROCEDURE refresh_trip_run_date_for_trip_date(
     p_trip_id TEXT,
     p_date DATE
@@ -188,7 +188,7 @@ BEGIN
         t.trip_id,
         p_date,
         is_trip_running(t.trip_id, p_date)
-    FROM gtfs_trips t
+    FROM trips t
     WHERE t.trip_id = p_trip_id
     ON CONFLICT (trip_id, date)
     DO UPDATE SET running = EXCLUDED.running;
@@ -212,7 +212,7 @@ BEGIN
         t.trip_id,
         CURRENT_DATE + 29,
         is_trip_running(t.trip_id, CURRENT_DATE + 29)
-    FROM gtfs_trips t
+    FROM trips t
     ON CONFLICT (trip_id, date)
     DO UPDATE SET running = EXCLUDED.running;
 END;
