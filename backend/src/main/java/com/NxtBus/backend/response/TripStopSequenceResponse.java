@@ -11,5 +11,4 @@ public record TripStopSequenceResponse(
         String serviceId,
         String tripHeadsign,
         List<TimedStopSequenceDto> stops
-) {
-}
+) {}
