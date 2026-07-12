@@ -41,21 +41,5 @@ public class TripService {
                 .toList();
     }
 
-    public TripStopSequenceResponse getTripStopSequence(String tripId) {
-        TripDto trip = getTripById(tripId);
-        RouteDto route = routeService.getRouteById(trip.routeId());
-
-        List<TimedStopSequenceDto> stops = getTripStops(tripId);
-
-        return new TripStopSequenceResponse(
-                trip.tripId(),
-                trip.routeId(),
-                route.routeShortName(),
-                trip.serviceId(),
-                trip.tripHeadsign(),
-                stops
-        );
-    }
-
 
 }
