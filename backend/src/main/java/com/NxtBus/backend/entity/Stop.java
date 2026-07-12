@@ -5,7 +5,7 @@ import lombok.*;
 import org.locationtech.jts.geom.Point;
 
 @Entity
-@Table(name = "gtfs_stops")
+@Table(name = "stops")
 @Getter @Setter @NoArgsConstructor
 public class Stop {
     @Id

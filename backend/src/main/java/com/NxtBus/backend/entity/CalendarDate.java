@@ -7,7 +7,7 @@ import java.io.Serializable;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "gtfs_calendar_dates")
+@Table(name = "calendar_dates")
 @IdClass(CalendarDate.CalendarDateId.class)
 @Getter @Setter @NoArgsConstructor
 public class CalendarDate {
