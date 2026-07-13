@@ -1,17 +1,16 @@
 package com.nxtbus.backend.service;
 
-import com.nxtbus.backend.dto.RouteDto;
-import com.nxtbus.backend.dto.StopDto;
-import com.nxtbus.backend.dto.TimedStopSequenceDto;
-import com.nxtbus.backend.dto.TripDto;
+import com.nxtbus.backend.dto.*;
 import com.nxtbus.backend.entity.Stop;
 import com.nxtbus.backend.entity.Trip;
+import com.nxtbus.backend.exception.NoTripsFoundForRouteException;
 import com.nxtbus.backend.exception.RouteNotFoundException;
 import com.nxtbus.backend.exception.StopNotFoundException;
 import com.nxtbus.backend.exception.TripNotFoundException;
 import com.nxtbus.backend.repository.RouteRepository;
 import com.nxtbus.backend.repository.TripRepository;
 import com.nxtbus.backend.repository.projection.TripView;
+import com.nxtbus.backend.response.RouteStopSequenceResponse;
 import com.nxtbus.backend.response.TripStopSequenceResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -63,5 +62,29 @@ public class TripService {
 
         return tripRepository.findByRouteId(routeId, pageable).
                 map(TripDto::from);
+    }
+
+    public RouteStopSequenceResponse getRouteStopSequence(String routeId) {
+        RouteDto route = routeService.getRouteById(routeId);
+
+        Page<TripDto> trips = getTripsByRoute(routeId, 0, 1); // page 0, size 1 -> first tripId alphabetically
+
+        if (trips.isEmpty()) {
+            throw new NoTripsFoundForRouteException(routeId);
+        }
+
+        TripDto representativeTrip = trips.getContent().get(0);
+
+        List<StopSequenceDto> stops = tripRepository.findStopsByTripId(representativeTrip.tripId())
+                .stream()
+                .map(StopSequenceDto::from)
+                .toList();
+
+        return new RouteStopSequenceResponse(
+                routeId,
+                route.routeShortName(),
+                representativeTrip.tripId(),
+                stops
+        );
     }
 }

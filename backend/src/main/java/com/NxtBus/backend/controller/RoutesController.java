@@ -3,6 +3,7 @@ package com.nxtbus.backend.controller;
 import com.nxtbus.backend.dto.RouteDto;
 import com.nxtbus.backend.dto.TripDto;
 import com.nxtbus.backend.response.PagedResponse;
+import com.nxtbus.backend.response.RouteStopSequenceResponse;
 import com.nxtbus.backend.service.RouteService;
 import com.nxtbus.backend.service.TripService;
 import org.springframework.data.domain.Page;
@@ -44,5 +45,10 @@ public class RoutesController {
 
         Page<TripDto> result = tripService.getTripsByRoute(routeId, page, size);
         return PagedResponse.from(result);
+    }
+
+    @GetMapping("/{routeId}/stops")
+    public RouteStopSequenceResponse getStopsByRoute(@PathVariable String routeId) {
+        return tripService.getRouteStopSequence(routeId);
     }
 }
