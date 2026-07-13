@@ -39,7 +39,7 @@ public class RoutesController {
 
     @GetMapping("{routeId}/trips")
     public PagedResponse<TripDto> getTripsByRoute(
-            @RequestParam String routeId,
+            @PathVariable String routeId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
 
