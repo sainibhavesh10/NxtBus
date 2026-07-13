@@ -1,5 +1,6 @@
 package com.nxtbus.backend.controller;
 
+import com.nxtbus.backend.dto.GeoJsonFeature;
 import com.nxtbus.backend.dto.RouteDto;
 import com.nxtbus.backend.dto.TimedStopSequenceDto;
 import com.nxtbus.backend.dto.TripDto;
@@ -49,5 +50,10 @@ public class TripController {
                 trip.tripHeadsign(),
                 stops
         );
+    }
+
+    @GetMapping("/{tripId}/shape")
+    public GeoJsonFeature<TripDto> getShape(@PathVariable String tripId) {
+        return tripService.getShapeForTrip(tripId);
     }
 }
