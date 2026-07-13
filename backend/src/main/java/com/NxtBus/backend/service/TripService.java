@@ -3,12 +3,10 @@ package com.nxtbus.backend.service;
 import com.nxtbus.backend.dto.*;
 import com.nxtbus.backend.entity.Stop;
 import com.nxtbus.backend.entity.Trip;
-import com.nxtbus.backend.exception.NoTripsFoundForRouteException;
-import com.nxtbus.backend.exception.RouteNotFoundException;
-import com.nxtbus.backend.exception.StopNotFoundException;
-import com.nxtbus.backend.exception.TripNotFoundException;
+import com.nxtbus.backend.exception.*;
 import com.nxtbus.backend.repository.RouteRepository;
 import com.nxtbus.backend.repository.TripRepository;
+import com.nxtbus.backend.repository.projection.TripShapeView;
 import com.nxtbus.backend.repository.projection.TripView;
 import com.nxtbus.backend.response.RouteStopSequenceResponse;
 import com.nxtbus.backend.response.TripStopSequenceResponse;
@@ -16,8 +14,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
 import org.springframework.stereotype.Service;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.List;
 
@@ -30,9 +30,13 @@ public class TripService {
 
     private final RouteService routeService;
 
-    public TripService (TripRepository tripRepository, RouteService routeService){
+    private final JsonMapper jsonMapper;
+
+
+    public TripService (TripRepository tripRepository, RouteService routeService, JsonMapper jsonMapper){
         this.tripRepository = tripRepository;
         this.routeService = routeService;
+        this.jsonMapper = jsonMapper;
     }
 
     public void validateTripExists(String tripId) {
@@ -88,5 +92,21 @@ public class TripService {
                 representativeTrip.tripId(),
                 stops
         );
+    }
+
+    public GeoJsonFeature<TripDto> getShapeForTrip(String tripId) {
+        TripShapeView p = tripRepository.findShapeByTripId(tripId)
+                .orElseThrow(() -> new ShapeNotFoundException(tripId));
+
+        JsonNode geometry;
+        try {
+            geometry = jsonMapper.readTree(p.getGeometryJson());
+        } catch (JacksonException e) {
+            throw new IllegalStateException("Invalid shape geometry for trip " + tripId, e);
+        }
+
+        TripDto trip = TripDto.from(p);
+
+        return GeoJsonFeature.of(trip, geometry);
     }
 }
