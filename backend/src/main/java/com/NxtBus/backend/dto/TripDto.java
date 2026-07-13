@@ -1,6 +1,7 @@
 package com.nxtbus.backend.dto;
 
 import com.nxtbus.backend.entity.Trip;
+import com.nxtbus.backend.repository.projection.TripView;
 
 public record TripDto(
         String tripId,
@@ -21,6 +22,18 @@ public record TripDto(
                 trip.getTripHeadsign(),
                 trip.getDirectionId(),
                 trip.getBlockId()
+        );
+    }
+
+    public static TripDto from(TripView view) {
+        return new TripDto(
+                view.getTripId(),
+                view.getRouteId(),
+                view.getServiceId(),
+                view.getShapeId(),
+                view.getTripHeadsign(),
+                view.getDirectionId(),
+                view.getBlockId()
         );
     }
 }

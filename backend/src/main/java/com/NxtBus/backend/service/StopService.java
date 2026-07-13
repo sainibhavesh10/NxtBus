@@ -1,6 +1,7 @@
 package com.nxtbus.backend.service;
 
 import com.nxtbus.backend.entity.Stop;
+import com.nxtbus.backend.exception.RouteNotFoundException;
 import com.nxtbus.backend.exception.StopNotFoundException;
 import com.nxtbus.backend.repository.StopRepository;
 import com.nxtbus.backend.dto.NearbyStopDto;
@@ -22,6 +23,12 @@ public class StopService {
         this.stopRepository = stopRepository;
     }
 
+    public void validateStopExists(String stopId) {
+        if (!stopRepository.existsById(stopId)) {
+            throw new RouteNotFoundException(stopId);
+        }
+    }
+
     public StopDto getStopById(String stopId) {
         Stop stop = stopRepository.findById(stopId)
                 .orElseThrow(() -> new StopNotFoundException(stopId));
@@ -33,6 +40,7 @@ public class StopService {
             return List.of();
         }
         String withoutSpaces = query.replaceAll("\\s+", "");
+        //later throw exception here
         if (withoutSpaces.length() < MIN_SEARCH_QUERY_LENGTH) {
             return List.of();
         }

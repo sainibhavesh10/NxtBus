@@ -44,4 +44,10 @@ public class RouteService {
                 .orElseThrow(() -> new RouteNotFoundException(routeId));
         return RouteDto.from(route);
     }
+
+    public void validateRouteExists(String routeId) {
+        if (!routeRepository.existsById(routeId)) {
+            throw new RouteNotFoundException(routeId);
+        }
+    }
 }
