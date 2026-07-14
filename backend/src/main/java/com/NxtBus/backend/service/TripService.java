@@ -14,15 +14,13 @@ public interface TripService {
 
     TripDto getTripById(String tripId);
 
-    List<TimedStopSequenceDto> getTripStops(String tripId);
+    TripDto getRepresentativeTrip(String routeId);
 
     Page<TripDto> getTripsByRoute(
             String routeId,
             int page,
             int size
     );
-
-    RouteStopSequenceResponse getRouteStopSequence(String routeId);
 
     GeoJsonFeature<TripDto> getShapeForTrip(String tripId);
 }

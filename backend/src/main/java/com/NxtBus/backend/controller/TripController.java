@@ -6,6 +6,7 @@ import com.nxtbus.backend.dto.TimedStopSequenceDto;
 import com.nxtbus.backend.dto.TripDto;
 import com.nxtbus.backend.response.TripStopSequenceResponse;
 import com.nxtbus.backend.service.RouteService;
+import com.nxtbus.backend.service.StopTimeService;
 import com.nxtbus.backend.service.TripService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,9 +24,14 @@ public class TripController {
 
     private final RouteService routeService;
 
-    public TripController(TripService tripService, RouteService routeService){
+    private final StopTimeService stopTimeService;
+
+    public TripController(TripService tripService,
+                          RouteService routeService,
+                          StopTimeService stopTimeService){
         this.tripService = tripService;
         this.routeService = routeService;
+        this.stopTimeService = stopTimeService;
     }
 
     @GetMapping("/{tripId}")
@@ -40,7 +46,7 @@ public class TripController {
         TripDto trip = getTripById(tripId);
         RouteDto route = routeService.getRouteById(trip.routeId());
 
-        List<TimedStopSequenceDto> stops = tripService.getTripStops(tripId);
+        List<TimedStopSequenceDto> stops = stopTimeService.getStopSequenceForTrip(tripId);
 
         return new TripStopSequenceResponse(
                 trip.tripId(),

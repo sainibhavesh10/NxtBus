@@ -26,14 +26,11 @@ public class TripServiceImpl implements TripService {
 
     private final TripRepository tripRepository;
 
-    private final RouteService routeService;
-
     private final JsonMapper jsonMapper;
 
 
-    public TripServiceImpl(TripRepository tripRepository, RouteService routeService, JsonMapper jsonMapper){
+    public TripServiceImpl(TripRepository tripRepository, JsonMapper jsonMapper){
         this.tripRepository = tripRepository;
-        this.routeService = routeService;
         this.jsonMapper = jsonMapper;
     }
 
@@ -52,49 +49,21 @@ public class TripServiceImpl implements TripService {
     }
 
     @Override
-    public List<TimedStopSequenceDto> getTripStops(String tripId) {
-        validateTripExists(tripId);
-
-        return tripRepository.findStopsByTripId(tripId)
-                .stream()
-                .map(TimedStopSequenceDto::from)
-                .toList();
+    public TripDto getRepresentativeTrip(String routeId) {
+        Page<TripDto> trips = getTripsByRoute(routeId, 0, 1); // page 0, size 1 -> first tripId alphabetically
+        if (trips.isEmpty()) {
+            throw new NoTripsFoundForRouteException(routeId);
+        }
+        return trips.getContent().getFirst();
     }
 
     @Override
     public Page<TripDto> getTripsByRoute(String routeId, int page, int size) {
-        routeService.validateRouteExists(routeId);
-
         int cappedSize = Math.min(size, MAX_PAGE_SIZE);
         Pageable pageable = PageRequest.of(page, cappedSize, Sort.by("tripId").ascending());
 
         return tripRepository.findByRouteId(routeId, pageable).
                 map(TripDto::from);
-    }
-
-    @Override
-    public RouteStopSequenceResponse getRouteStopSequence(String routeId) {
-        RouteDto route = routeService.getRouteById(routeId);
-
-        Page<TripDto> trips = getTripsByRoute(routeId, 0, 1); // page 0, size 1 -> first tripId alphabetically
-
-        if (trips.isEmpty()) {
-            throw new NoTripsFoundForRouteException(routeId);
-        }
-
-        TripDto representativeTrip = trips.getContent().getFirst();
-
-        List<StopSequenceDto> stops = tripRepository.findStopsByTripId(representativeTrip.tripId())
-                .stream()
-                .map(StopSequenceDto::from)
-                .toList();
-
-        return new RouteStopSequenceResponse(
-                routeId,
-                route.routeShortName(),
-                representativeTrip.tripId(),
-                stops
-        );
     }
 
     @Override
