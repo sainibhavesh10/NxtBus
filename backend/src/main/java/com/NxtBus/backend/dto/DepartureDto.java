@@ -12,7 +12,7 @@ public record DepartureDto(
         String tripId,
         @JsonFormat(pattern = "HH:mm") LocalTime arrivalTime,
         @JsonFormat(pattern = "HH:mm") LocalTime departureTime,
-        @JsonProperty("headsign") String tripHeadsign,
+        String tripHeadsign,
         boolean nextDay,
         int minutesFromNow
 ) {
