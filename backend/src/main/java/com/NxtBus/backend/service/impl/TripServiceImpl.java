@@ -4,20 +4,12 @@ import com.nxtbus.backend.dto.*;
 import com.nxtbus.backend.entity.Trip;
 import com.nxtbus.backend.exception.*;
 import com.nxtbus.backend.repository.TripRepository;
-import com.nxtbus.backend.repository.projection.TripShapeView;
-import com.nxtbus.backend.response.RouteStopSequenceResponse;
-import com.nxtbus.backend.service.RouteService;
 import com.nxtbus.backend.service.TripService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import tools.jackson.core.JacksonException;
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.json.JsonMapper;
-
-import java.util.List;
 
 @Service
 public class TripServiceImpl implements TripService {
@@ -26,18 +18,15 @@ public class TripServiceImpl implements TripService {
 
     private final TripRepository tripRepository;
 
-    private final JsonMapper jsonMapper;
 
-
-    public TripServiceImpl(TripRepository tripRepository, JsonMapper jsonMapper){
+    public TripServiceImpl(TripRepository tripRepository){
         this.tripRepository = tripRepository;
-        this.jsonMapper = jsonMapper;
     }
 
     @Override
     public void validateTripExists(String tripId) {
         if (!tripRepository.existsById(tripId)) {
-            throw new RouteNotFoundException(tripId);
+            throw new TripNotFoundException(tripId);
         }
     }
 
@@ -66,20 +55,4 @@ public class TripServiceImpl implements TripService {
                 map(TripDto::from);
     }
 
-    @Override
-    public GeoJsonFeature<TripDto> getShapeForTrip(String tripId) {
-        TripShapeView p = tripRepository.findShapeByTripId(tripId)
-                .orElseThrow(() -> new ShapeNotFoundException(tripId));
-
-        JsonNode geometry;
-        try {
-            geometry = jsonMapper.readTree(p.getGeometryJson());
-        } catch (JacksonException e) {
-            throw new IllegalStateException("Invalid shape geometry for trip " + tripId, e);
-        }
-
-        TripDto trip = TripDto.from(p);
-
-        return GeoJsonFeature.of(trip, geometry);
-    }
 }

@@ -1,7 +1,6 @@
 package com.nxtbus.backend.service.impl;
 
 import com.nxtbus.backend.entity.Stop;
-import com.nxtbus.backend.exception.RouteNotFoundException;
 import com.nxtbus.backend.exception.StopNotFoundException;
 import com.nxtbus.backend.repository.StopRepository;
 import com.nxtbus.backend.dto.NearbyStopDto;
@@ -27,7 +26,7 @@ public class StopServiceImpl implements StopService {
     @Override
     public void validateStopExists(String stopId) {
         if (!stopRepository.existsById(stopId)) {
-            throw new RouteNotFoundException(stopId);
+            throw new StopNotFoundException(stopId);
         }
     }
 

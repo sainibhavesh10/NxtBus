@@ -1,11 +1,11 @@
 package com.nxtbus.backend.controller;
 
-import com.nxtbus.backend.dto.RouteDto;
-import com.nxtbus.backend.dto.StopSequenceDto;
-import com.nxtbus.backend.dto.TripDto;
+import com.nxtbus.backend.dto.*;
+import com.nxtbus.backend.response.GeoJsonFeatureResponse;
 import com.nxtbus.backend.response.PagedResponse;
 import com.nxtbus.backend.response.RouteStopSequenceResponse;
 import com.nxtbus.backend.service.RouteService;
+import com.nxtbus.backend.service.ShapeService;
 import com.nxtbus.backend.service.StopTimeService;
 import com.nxtbus.backend.service.TripService;
 import org.springframework.data.domain.Page;
@@ -23,12 +23,16 @@ public class RoutesController {
 
     private final StopTimeService stopTimeService;
 
+    private final ShapeService shapeService;
+
     public RoutesController(RouteService routeService,
                             TripService tripService,
-                            StopTimeService stopTimeService){
+                            StopTimeService stopTimeService,
+                            ShapeService shapeService){
         this.routeService = routeService;
         this.tripService = tripService;
         this.stopTimeService = stopTimeService;
+        this.shapeService = shapeService;
     }
 
     @GetMapping("/search")
@@ -64,6 +68,18 @@ public class RoutesController {
                 routeDto.routeId(),
                 routeDto.routeShortName(),
                 stops
+        );
+    }
+
+    @GetMapping("/{routeId}/shape")
+    public GeoJsonFeatureResponse<RouteShapeProperties> getShape(@PathVariable String routeId) {
+        RouteDto route = routeService.getRouteById(routeId);
+        //check if the given route has a trip or not
+        tripService.getRepresentativeTrip(routeId);
+        ShapeDto shape = shapeService.getShapeByRouteId(routeId);
+        return GeoJsonFeatureResponse.of(
+                new RouteShapeProperties(route,shape.shapeId()),
+                shape.geom()
         );
     }
 }

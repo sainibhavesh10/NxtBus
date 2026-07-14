@@ -1,11 +1,10 @@
 package com.nxtbus.backend.controller;
 
-import com.nxtbus.backend.dto.GeoJsonFeature;
-import com.nxtbus.backend.dto.RouteDto;
-import com.nxtbus.backend.dto.TimedStopSequenceDto;
-import com.nxtbus.backend.dto.TripDto;
+import com.nxtbus.backend.dto.*;
+import com.nxtbus.backend.response.GeoJsonFeatureResponse;
 import com.nxtbus.backend.response.TripStopSequenceResponse;
 import com.nxtbus.backend.service.RouteService;
+import com.nxtbus.backend.service.ShapeService;
 import com.nxtbus.backend.service.StopTimeService;
 import com.nxtbus.backend.service.TripService;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,12 +25,16 @@ public class TripController {
 
     private final StopTimeService stopTimeService;
 
+    private final ShapeService shapeService;
+
     public TripController(TripService tripService,
                           RouteService routeService,
-                          StopTimeService stopTimeService){
+                          StopTimeService stopTimeService,
+                          ShapeService shapeService){
         this.tripService = tripService;
         this.routeService = routeService;
         this.stopTimeService = stopTimeService;
+        this.shapeService = shapeService;
     }
 
     @GetMapping("/{tripId}")
@@ -59,7 +62,12 @@ public class TripController {
     }
 
     @GetMapping("/{tripId}/shape")
-    public GeoJsonFeature<TripDto> getShape(@PathVariable String tripId) {
-        return tripService.getShapeForTrip(tripId);
+    public GeoJsonFeatureResponse<TripShapeProperties> getShape(@PathVariable String tripId) {
+        TripDto trip = tripService.getTripById(tripId);
+        ShapeDto shape = shapeService.getShapeByTripId(tripId);
+        return GeoJsonFeatureResponse.of(
+                new TripShapeProperties(trip,shape.shapeId()),
+                shape.geom()
+        );
     }
 }

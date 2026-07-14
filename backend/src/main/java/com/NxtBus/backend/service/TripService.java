@@ -1,12 +1,7 @@
 package com.nxtbus.backend.service;
 
-import com.nxtbus.backend.dto.GeoJsonFeature;
-import com.nxtbus.backend.dto.TimedStopSequenceDto;
 import com.nxtbus.backend.dto.TripDto;
-import com.nxtbus.backend.response.RouteStopSequenceResponse;
 import org.springframework.data.domain.Page;
-
-import java.util.List;
 
 public interface TripService {
 
@@ -21,6 +16,4 @@ public interface TripService {
             int page,
             int size
     );
-
-    GeoJsonFeature<TripDto> getShapeForTrip(String tripId);
 }

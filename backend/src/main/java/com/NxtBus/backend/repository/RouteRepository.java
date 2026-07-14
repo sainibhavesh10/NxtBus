@@ -34,5 +34,4 @@ public interface RouteRepository  extends JpaRepository<Route, String> {
         LIMIT :limit
         """, nativeQuery = true)
     List<RouteView> searchRouteByName(@Param("query") String query, @Param("limit") int limit);
-
 }
