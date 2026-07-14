@@ -1,10 +1,7 @@
 package com.nxtbus.backend.controller;
 
-import com.nxtbus.backend.dto.DepartureDto;
-import com.nxtbus.backend.dto.StopDto;
 import com.nxtbus.backend.response.UpcomingDepartureResponse;
-import com.nxtbus.backend.service.StopService;
-import com.nxtbus.backend.service.StopTimeService;
+import com.nxtbus.backend.service.DepartureService;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,7 +9,6 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/stops")
@@ -20,12 +16,10 @@ public class DepartureController {
 
     private static final ZoneId DELHI_ZONE = ZoneId.of("Asia/Kolkata");
 
-    private final StopService stopService;
-    private final StopTimeService stopTimeService;
+    private final DepartureService departureService;
 
-    public DepartureController(StopTimeService stopTimeService, StopService stopService) {
-        this.stopTimeService = stopTimeService;
-        this.stopService = stopService;
+    public DepartureController(DepartureService departureService) {
+        this.departureService = departureService;
     }
 
     @GetMapping("/{stopId}/departures")
@@ -42,17 +36,7 @@ public class DepartureController {
         LocalDate effectiveDate = (date != null) ? date : now.toLocalDate();
         LocalTime effectiveTime = (time != null) ? time : now.toLocalTime();
 
-        StopDto stop = stopService.getStopById(stopId);
-
-        List<DepartureDto> departures = stopTimeService
+        return departureService
                 .getUpcomingDepartures(stopId, effectiveDate, effectiveTime, limit);
-
-        return new UpcomingDepartureResponse(
-                stop.stopId(),
-                stop.stopName(),
-                effectiveDate,
-                effectiveTime,
-                departures
-        );
     }
 }
