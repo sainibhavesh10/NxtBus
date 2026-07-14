@@ -1,10 +1,12 @@
 package com.nxtbus.backend.controller;
 
 import com.nxtbus.backend.dto.RouteDto;
+import com.nxtbus.backend.dto.StopSequenceDto;
 import com.nxtbus.backend.dto.TripDto;
 import com.nxtbus.backend.response.PagedResponse;
 import com.nxtbus.backend.response.RouteStopSequenceResponse;
 import com.nxtbus.backend.service.RouteService;
+import com.nxtbus.backend.service.StopTimeService;
 import com.nxtbus.backend.service.TripService;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
@@ -19,9 +21,14 @@ public class RoutesController {
 
     private final TripService tripService;
 
-    public RoutesController(RouteService routeService, TripService tripService){
+    private final StopTimeService stopTimeService;
+
+    public RoutesController(RouteService routeService,
+                            TripService tripService,
+                            StopTimeService stopTimeService){
         this.routeService = routeService;
         this.tripService = tripService;
+        this.stopTimeService = stopTimeService;
     }
 
     @GetMapping("/search")
@@ -49,6 +56,14 @@ public class RoutesController {
 
     @GetMapping("/{routeId}/stops")
     public RouteStopSequenceResponse getStopsByRoute(@PathVariable String routeId) {
-        return tripService.getRouteStopSequence(routeId);
+        RouteDto routeDto = routeService.getRouteById(routeId);
+
+        List<StopSequenceDto> stops = stopTimeService.getStopSequenceForRoute(routeId);
+
+        return new RouteStopSequenceResponse(
+                routeDto.routeId(),
+                routeDto.routeShortName(),
+                stops
+        );
     }
 }

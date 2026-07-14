@@ -68,3 +68,7 @@ DROP TABLE trip_shapes_tmp;
 -- ALTER TABLE trips
 --     ADD CONSTRAINT fk_trips_shape
 --     FOREIGN KEY (shape_id) REFERENCES shapes (shape_id);
+ALTER TABLE trips
+    ADD CONSTRAINT fk_trips_shape
+    FOREIGN KEY (shape_id)
+    REFERENCES shapes (shape_id);
