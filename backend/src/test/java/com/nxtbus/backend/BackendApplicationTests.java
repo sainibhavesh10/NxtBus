@@ -1,4 +1,4 @@
-package com.NxtBus.backend;
+package com.nxtbus.backend;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
