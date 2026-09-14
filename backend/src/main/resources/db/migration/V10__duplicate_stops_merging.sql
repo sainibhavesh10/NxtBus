@@ -80,4 +80,5 @@ COMMIT;
 -- Distance(in meters)                      300         500         750         1000
 -- Before(stops within the distance)        38,538      76,711      1,41,057    2,24,373
 -- After(stops within the distance)         14,826      30,411      56,618      90,626
--- I'll choose
+-- I choose 1000m and calculated the transfer time, now we can give user a choice of maximum how much transfer time should be there.
+-- Also now i have shape of footpath.
