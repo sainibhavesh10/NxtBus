@@ -7,11 +7,12 @@
 -- duration_seconds happens to be equal both ways, so lookups by origin
 -- stop are a plain equality query with no self-join or OR logic needed.
 
-CREATE TABLE footpaths (
-    from_stop_id     VARCHAR(64) NOT NULL,
-    to_stop_id       VARCHAR(64) NOT NULL,
-    duration_seconds INT NOT NULL,
+CREATE TABLE IF NOT EXISTS transfers (
+    from_stop_id TEXT NOT NULL,
+    to_stop_id TEXT NOT NULL,
+    min_transfer_time INTEGER NOT NULL,
+    shape_id TEXT NOT NULL REFERENCES shapes(shape_id),
     PRIMARY KEY (from_stop_id, to_stop_id)
 );
 
-CREATE INDEX idx_footpaths_from_stop ON footpaths (from_stop_id);
+CREATE INDEX idx_transfers_from_stop ON transfers (from_stop_id);
