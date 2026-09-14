@@ -1,7 +1,6 @@
 services:
   postgres:
     image: postgis/postgis:17-3.5
-    platform: linux/amd64
     container_name: nxtbus_postgres
     restart: unless-stopped
     environment:
@@ -30,6 +29,19 @@ services:
       - "5050:80"
     depends_on:
       - postgres
+
+  # Self-hosted OSRM foot-routing server. Data is prepared once via
+  # scripts/setup_osrm.sh (see that script for instructions), which
+  # produces the .osrm* files this container serves from ./data/osrm.
+  osrm:
+    image: osrm/osrm-backend
+    container_name: nxtbus_osrm
+    restart: unless-stopped
+    command: osrm-routed --algorithm mld --max-table-size 1000000 /data/map.osrm
+    volumes:
+      - ./data/osrm:/data
+    ports:
+      - "5001:5000"
 
   backend:
     build:

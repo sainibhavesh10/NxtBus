@@ -6,15 +6,18 @@ import lombok.*;
 import java.io.Serializable;
 
 @Entity
-@Table(name = "footpaths")
+@Table(name = "transfers")
 @IdClass(Footpath.FootpathId.class)
 @Getter @Setter @NoArgsConstructor
 public class Footpath {
     @Id @Column(name = "from_stop_id") private String fromStopId;
     @Id @Column(name = "to_stop_id") private String toStopId;
 
-    @Column(name = "duration_seconds", nullable = false)
+    @Column(name = "min_transfer_time", nullable = false)
     private int durationSeconds;
+
+    @Column(name = "shape_id")
+    private String shapeId;
 
     @Data @NoArgsConstructor @AllArgsConstructor
     public static class FootpathId implements Serializable {
