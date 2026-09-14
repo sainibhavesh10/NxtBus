@@ -1,6 +1,6 @@
 package com.nxtbus.routing.index;
 
-import com.nxtbus.backend.dto.realtime.EffectiveScheduleSnapshot;
+import com.nxtbus.backend.dto.realtime.ContinuousSchedule;
 import com.nxtbus.backend.dto.realtime.FootpathEdge;
 import com.nxtbus.backend.dto.realtime.StopTimeEntry;
 import com.nxtbus.backend.dto.realtime.TripSchedule;
@@ -15,13 +15,13 @@ public class RaptorIndexBuilder {
 
     private static final Logger log = LoggerFactory.getLogger(RaptorIndexBuilder.class);
 
-    public RaptorIndex build(EffectiveScheduleSnapshot snapshot, Map<String, List<FootpathEdge>> footpaths) {
+    public RaptorIndex build(ContinuousSchedule schedule, Map<String, List<FootpathEdge>> footpaths) {
 
         // Group by resolved stop-sequence signature. A reroute's sequence
         // differs from its base pattern by definition, so it falls into its
         // own group here with zero special-casing.
         Map<List<String>, List<TripSchedule>> groups = new LinkedHashMap<>();
-        for (TripSchedule trip : snapshot.trips()) {
+        for (TripSchedule trip : schedule.trips()) {
             List<String> signature = trip.stopTimes().stream().map(StopTimeEntry::stopId).toList();
             groups.computeIfAbsent(signature, k -> new ArrayList<>()).add(trip);
         }

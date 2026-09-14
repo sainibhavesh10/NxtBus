@@ -1,17 +1,12 @@
-package com.nxtbus.routing.engine;
+package com.nxtbus.routing.index;
 
-import com.nxtbus.backend.dto.realtime.EffectiveScheduleSnapshot;
-import com.nxtbus.backend.dto.realtime.FootpathEdge;
-import com.nxtbus.backend.dto.realtime.StopTimeEntry;
-import com.nxtbus.backend.dto.realtime.TripSchedule;
-import com.nxtbus.routing.index.RaptorIndex;
-import com.nxtbus.routing.index.RaptorIndexBuilder;
+import com.nxtbus.backend.dto.realtime.*;
+import com.nxtbus.routing.engine.RaptorEngine;
 import com.nxtbus.routing.model.Journey;
 import com.nxtbus.routing.model.JourneyLeg;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
-import java.time.LocalDate;
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -37,8 +32,8 @@ class RaptorEngineTest {
     }
 
     private RaptorIndex indexOf(List<TripSchedule> trips, Map<String, List<FootpathEdge>> footpaths) {
-        var snapshot = new EffectiveScheduleSnapshot(LocalDate.of(2026, 9, 9), trips, Instant.now());
-        return builder.build(snapshot, footpaths);
+        var schedule = new ContinuousSchedule(trips, Instant.now());
+        return builder.build(schedule, footpaths);
     }
 
     private RaptorEngine engineFor(RaptorIndex index) {
