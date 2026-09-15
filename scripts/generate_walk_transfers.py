@@ -17,7 +17,7 @@ Pipeline
 2. Skip any (from, to) directions that already have a transfer row
    (idempotent re-runs -- important at this scale).
 3. Route the remaining directions through OSRM concurrently (safe/fast
-   because this hits your own local `osrm` container, not a shared
+   because this hits your own local `osrm-foot` container, not a shared
    public server).
 4. Store the route geometry in `shapes` and the duration in `transfers`,
    using ON CONFLICT DO NOTHING.
@@ -29,7 +29,7 @@ Setup
 
     # One-time OSRM data prep (see scripts/setup_osrm.sh):
     ./setup_osrm.sh https://download.geofabrik.de/<region>-latest.osm.pbf
-    docker compose up -d osrm
+    docker compose up -d osrm-foot
 
     # Run:
     python generate_walk_transfers.py --limit 20 -v   # smoke test first
@@ -92,6 +92,7 @@ class Config:
     limit: int = 0                     # 0 = no limit; cap candidate pairs for testing
     dry_run: bool = False
     skip_schema_setup: bool = False
+    max_transfer_seconds: float = 1200.0   # discard footpaths with a longer walking duration than this (default 20 min)
 
 
 def load_db_config(cli_overrides: dict) -> dict:
@@ -329,18 +330,33 @@ def osrm_foot_route(session: requests.Session, cfg: Config, direction: dict) -> 
     }
 
 
-def persist_result(conn, cfg: Config, result: dict) -> bool:
-    """Writes one OSRM result to the DB. Returns True on success."""
+def persist_result(conn, cfg: Config, result: dict) -> str:
+    """
+    Writes one OSRM result to the DB.
+
+    Returns one of:
+        "ok"        - shape + transfer were (or would be, in --dry-run) written
+        "too_long"  - walking duration exceeded cfg.max_transfer_seconds; not written
+        "failed"    - OSRM error or a degenerate/unusable route; not written
+    """
     if result["error"] is not None:
         log.error("OSRM failed for %s -> %s: %s", result["from_stop_id"], result["to_stop_id"], result["error"])
-        return False
+        return "failed"
+
+    duration = result["duration"]
+    if duration is not None and duration > cfg.max_transfer_seconds:
+        log.info(
+            "Skipping %s -> %s: walking duration %.0fs exceeds max_transfer_seconds=%.0fs",
+            result["from_stop_id"], result["to_stop_id"], duration, cfg.max_transfer_seconds,
+        )
+        return "too_long"
 
     coords = result["geometry"].get("coordinates", [])
     num_points = len(coords)
     if num_points < 2:
         log.warning("Degenerate route %s -> %s (num_points=%d); skipping",
                     result["from_stop_id"], result["to_stop_id"], num_points)
-        return False
+        return "failed"
 
     shape_id = f"walk_{result['from_stop_id']}_{result['to_stop_id']}"
     geojson_str = json.dumps(result["geometry"])
@@ -348,7 +364,7 @@ def persist_result(conn, cfg: Config, result: dict) -> bool:
     insert_shape(conn, shape_id, geojson_str, num_points, cfg.dry_run)
     insert_transfer(conn, result["from_stop_id"], result["to_stop_id"],
                      int(round(result["duration"])), shape_id, cfg.dry_run)
-    return True
+    return "ok"
 
 
 # --------------------------------------------------------------------------
@@ -399,6 +415,7 @@ def run(cfg: Config):
 
     processed = 0
     succeeded = 0
+    too_long = 0
     failed = 0
 
     try:
@@ -408,20 +425,25 @@ def run(cfg: Config):
             for future in as_completed(futures):
                 result = future.result()
                 try:
-                    ok = persist_result(conn, cfg, result)
+                    status = persist_result(conn, cfg, result)
                 except Exception:
                     log.exception("DB error persisting %s -> %s",
                                   result["from_stop_id"], result["to_stop_id"])
                     conn.rollback()
-                    ok = False
+                    status = "failed"
 
                 processed += 1
-                succeeded += 1 if ok else 0
-                failed += 0 if ok else 1
+                if status == "ok":
+                    succeeded += 1
+                elif status == "too_long":
+                    too_long += 1
+                else:
+                    failed += 1
 
                 if processed % cfg.commit_every == 0:
                     conn.commit()
-                    log.info("Progress: %d/%d (%d ok, %d failed)", processed, total, succeeded, failed)
+                    log.info("Progress: %d/%d (%d ok, %d too long, %d failed)",
+                              processed, total, succeeded, too_long, failed)
 
         conn.commit()
 
@@ -431,7 +453,8 @@ def run(cfg: Config):
         conn.close()
         sys.exit(1)
 
-    log.info("Done. %d processed, %d succeeded, %d failed.", processed, succeeded, failed)
+    log.info("Done. %d processed, %d succeeded, %d skipped (>%.0fs walk), %d failed.",
+              processed, succeeded, too_long, cfg.max_transfer_seconds, failed)
     conn.close()
     session.close()
 
@@ -450,6 +473,8 @@ def parse_args() -> Config:
     p.add_argument("--max-retries", type=int, default=4, help="Max retries per OSRM request")
     p.add_argument("--backoff", type=float, default=1.5, help="Retry backoff base (s)")
     p.add_argument("--commit-every", type=int, default=200, help="Commit every N directions")
+    p.add_argument("--max-transfer-seconds", type=float, default=1200.0,
+                    help="Discard footpaths whose OSRM walking duration exceeds this many seconds (default 1200 = 20 min)")
     p.add_argument("--limit", type=int, default=0, help="Limit number of candidate pairs (0 = no limit; for testing)")
     p.add_argument("--dry-run", action="store_true", help="Don't write to DB, just log actions")
     p.add_argument("--skip-schema-setup", action="store_true", help="Don't auto-create the transfers unique constraint / spatial index")
@@ -487,6 +512,7 @@ def parse_args() -> Config:
         limit=args.limit,
         dry_run=args.dry_run,
         skip_schema_setup=args.skip_schema_setup,
+        max_transfer_seconds=args.max_transfer_seconds,
     )
 
 
