@@ -2,64 +2,98 @@
 #
 # setup_osrm.sh
 #
-# One-time preprocessing step for the self-hosted OSRM 'osrm' service in
-# docker-compose.yml. Downloads an OpenStreetMap extract and runs the
+# One-time preprocessing step for the self-hosted OSRM services in
+# docker-compose.yml ('osrm-foot' for foot routing, 'osrm-car' for driving/bus
+# routing). Downloads an OpenStreetMap extract once and runs the
 # osrm-extract / osrm-partition / osrm-customize pipeline against the
-# 'foot' profile, producing data/osrm/map.osrm* which the osrm-routed
-# container serves.
+# requested profile, producing data/osrm/<profile>/map.osrm* which the
+# matching osrm-routed container serves.
 #
 # Usage:
-#   ./scripts/setup_osrm.sh <geofabrik_pbf_url>
+#   ./scripts/setup_osrm.sh <geofabrik_pbf_url> [profile]
+#
+#   profile: foot (default) | car | bicycle
 #
 # Find your region's extract at https://download.geofabrik.de/
-# Example (California):
-#   ./scripts/setup_osrm.sh https://download.geofabrik.de/north-america/us/california-latest.osm.pbf
+# Examples:
+#   ./scripts/setup_osrm.sh https://download.geofabrik.de/asia/india/northern-zone-latest.osm.pbf foot
+#   ./scripts/setup_osrm.sh https://download.geofabrik.de/asia/india/northern-zone-latest.osm.pbf car
 #
-# Re-run this whenever you want to refresh the map data. It's safe to
-# re-run; it overwrites the previous processed files.
+# The .pbf is downloaded once into data/osrm/ and reused for every
+# profile you prep (each profile still needs its own extract/partition/
+# customize run -- the resulting graph differs per profile).
+#
+# Re-run this whenever you want to refresh the map data or add a
+# profile. Safe to re-run; overwrites that profile's previous output.
+#
+# For a from-scratch project build you need BOTH profiles:
+#   ./scripts/setup_osrm.sh <pbf_url> foot
+#   ./scripts/setup_osrm.sh <pbf_url> car
+#   docker compose up -d osrm-foot osrm-car
 
 set -euo pipefail
 
-URL="${1:?Usage: $0 <osm_pbf_download_url>  (see https://download.geofabrik.de/)}"
+URL="${1:?Usage: $0 <osm_pbf_download_url> [foot|car|bicycle]  (see https://download.geofabrik.de/)}"
+PROFILE="${2:-foot}"
+
+case "$PROFILE" in
+  foot|car|bicycle) ;;
+  *) echo "Unknown profile '$PROFILE'. Use: foot | car | bicycle" >&2; exit 1 ;;
+esac
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
-OSRM_DATA_DIR="$PROJECT_ROOT/data/osrm"
+OSRM_ROOT="$PROJECT_ROOT/data/osrm"
+PROFILE_DIR="$OSRM_ROOT/$PROFILE"
 
-mkdir -p "$OSRM_DATA_DIR"
-cd "$OSRM_DATA_DIR"
+mkdir -p "$OSRM_ROOT" "$PROFILE_DIR"
 
 FILENAME="$(basename "$URL")"
 BASENAME="${FILENAME%.osm.pbf}"
+SHARED_PBF="$OSRM_ROOT/$FILENAME"
 
 echo "==> Downloading OSM extract: $FILENAME"
-if [ -f "$FILENAME" ]; then
-  echo "    Already present, skipping download (delete the file to force a re-download)."
+if [ -f "$SHARED_PBF" ]; then
+  echo "    Already present at data/osrm/$FILENAME, skipping download."
 else
-  curl -L -o "$FILENAME" "$URL"
+  curl -L -o "$SHARED_PBF" "$URL"
 fi
 
-echo "==> Extracting (foot profile)..."
-docker run --rm -v "$OSRM_DATA_DIR:/data" osrm/osrm-backend \
-  osrm-extract -p /opt/foot.lua "/data/$FILENAME"
+echo "==> Preparing profile: $PROFILE"
+cp -f "$SHARED_PBF" "$PROFILE_DIR/$FILENAME"
+
+echo "==> Extracting ($PROFILE profile)..."
+docker run --rm -v "$PROFILE_DIR:/data" osrm/osrm-backend \
+  osrm-extract -p "/opt/$PROFILE.lua" "/data/$FILENAME"
 
 echo "==> Renaming outputs to map.osrm*"
-for f in "$BASENAME".osrm*; do
-  new_name="map.osrm${f#"$BASENAME".osrm}"
-  mv "$f" "$new_name"
-done
+(
+  cd "$PROFILE_DIR"
+  for f in "$BASENAME".osrm*; do
+    new_name="map.osrm${f#"$BASENAME".osrm}"
+    mv "$f" "$new_name"
+  done
+)
 
 echo "==> Partitioning (MLD)..."
-docker run --rm -v "$OSRM_DATA_DIR:/data" osrm/osrm-backend \
+docker run --rm -v "$PROFILE_DIR:/data" osrm/osrm-backend \
   osrm-partition /data/map.osrm
 
 echo "==> Customizing (MLD)..."
-docker run --rm -v "$OSRM_DATA_DIR:/data" osrm/osrm-backend \
+docker run --rm -v "$PROFILE_DIR:/data" osrm/osrm-backend \
   osrm-customize /data/map.osrm
+
+# The per-profile copy of the .pbf is no longer needed once extraction
+# is done; remove it to save disk (the shared copy in data/osrm/ stays).
+rm -f "$PROFILE_DIR/$FILENAME"
 
 echo ""
 echo "Done. Start the routing server with:"
-echo "  docker compose up -d osrm"
+echo "  docker compose up -d osrm-$PROFILE"
 echo ""
 echo "Test it with:"
-echo "  curl 'http://localhost:5001/route/v1/foot/13.388,52.517;13.397,52.529?overview=false'"
+if [ "$PROFILE" = "foot" ]; then
+  echo "  curl 'http://localhost:5001/route/v1/foot/77.2295,28.6129;77.2167,28.6315?overview=false'"
+else
+  echo "  curl 'http://localhost:5002/route/v1/driving/77.2295,28.6129;77.2167,28.6315?overview=false'"
+fi
