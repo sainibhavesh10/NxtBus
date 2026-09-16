@@ -5,6 +5,7 @@ import com.nxtbus.backend.exception.NoTripsFoundForRouteException;
 import com.nxtbus.backend.repository.StopTimeRepository;
 import com.nxtbus.backend.response.RouteStopSequenceResponse;
 import com.nxtbus.backend.service.RouteService;
+import com.nxtbus.backend.service.StopService;
 import com.nxtbus.backend.service.StopTimeService;
 import com.nxtbus.backend.service.TripService;
 import org.springframework.data.domain.Page;
@@ -20,18 +21,18 @@ public class StopTimeServiceImpl implements StopTimeService {
 
     private final StopTimeRepository stopTimeRepository;
     private final TripService tripService;
+    private final StopService stopService;
 
-    public StopTimeServiceImpl(StopTimeRepository stopTimeRepository,
-                               TripService tripService) {
+    public StopTimeServiceImpl(StopTimeRepository stopTimeRepository, TripService tripService,
+                               StopService stopService) {
         this.stopTimeRepository = stopTimeRepository;
         this.tripService = tripService;
+        this.stopService = stopService;
     }
 
     @Override
-    public List<DepartureDto> getUpcomingDepartures(String stopId,
-                                                           LocalDate date,
-                                                           LocalTime time,
-                                                           Integer limit) {
+    public List<DepartureDto> getUpcomingDepartures(String stopId, LocalDate date, LocalTime time, Integer limit) {
+        stopService.validateStopExists(stopId);
         int safeLimit = Math.max(1, Math.min(limit, MAX_DEPARTURE_LIMIT));
         int afterSeconds = time.toSecondOfDay();
 

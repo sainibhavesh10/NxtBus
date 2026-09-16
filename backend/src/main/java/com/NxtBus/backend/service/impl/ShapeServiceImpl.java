@@ -17,16 +17,23 @@ public class ShapeServiceImpl implements ShapeService {
     }
 
     @Override
+    public ShapeDto getShapeByShapeId(String shapeId){
+        ShapeView v = shapeRepository.findGeometryByShapeId(shapeId)
+                .orElseThrow(() -> new ShapeNotFoundException("shapeId", shapeId));
+        return ShapeDto.from(v);
+    }
+
+    @Override
     public ShapeDto getShapeByTripId(String tripId) {
         ShapeView v = shapeRepository.findGeometryByTripId(tripId)
-                .orElseThrow(() -> new ShapeNotFoundException(tripId));
+                .orElseThrow(() -> new ShapeNotFoundException("trip", tripId));
         return ShapeDto.from(v);
     }
 
     @Override
     public ShapeDto getShapeByRouteId(String routeId) {
         ShapeView v = shapeRepository.findGeometryByRouteId(routeId)
-                .orElseThrow(() -> new ShapeNotFoundException(routeId));
+                .orElseThrow(() -> new ShapeNotFoundException("route", routeId));
         return ShapeDto.from(v);
     }
 }

@@ -4,6 +4,7 @@ import com.nxtbus.backend.dto.*;
 import com.nxtbus.backend.entity.Trip;
 import com.nxtbus.backend.exception.*;
 import com.nxtbus.backend.repository.TripRepository;
+import com.nxtbus.backend.service.RouteService;
 import com.nxtbus.backend.service.TripService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -18,9 +19,12 @@ public class TripServiceImpl implements TripService {
 
     private final TripRepository tripRepository;
 
+    private final RouteService routeService;
 
-    public TripServiceImpl(TripRepository tripRepository){
+
+    public TripServiceImpl(TripRepository tripRepository, RouteService routeService){
         this.tripRepository = tripRepository;
+        this.routeService = routeService;
     }
 
     @Override
@@ -48,6 +52,7 @@ public class TripServiceImpl implements TripService {
 
     @Override
     public Page<TripDto> getTripsByRoute(String routeId, int page, int size) {
+        routeService.validateRouteExists(routeId);
         int cappedSize = Math.min(size, MAX_PAGE_SIZE);
         Pageable pageable = PageRequest.of(page, cappedSize, Sort.by("tripId").ascending());
 
