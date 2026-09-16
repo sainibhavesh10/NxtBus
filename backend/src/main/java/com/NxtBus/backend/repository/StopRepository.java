@@ -9,11 +9,28 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
-public interface StopRepository   extends JpaRepository<Stop, String> {
+public interface StopRepository extends JpaRepository<Stop, String> {
 
+    // Cheap: nearest stops by geometry only, no distance value computed.
+    // Backs getNearestStops() — internal/lightweight lookups (e.g. JourneyServiceImpl).
+    @Query(value = """
+    SELECT stop_id AS stopId,
+           stop_code AS stopCode,
+           stop_name AS stopName,
+           stop_lat AS stopLat,
+           stop_lon AS stopLon,
+           zone_id AS zoneId
+    FROM stops
+    ORDER BY geom <-> ST_SetSRID(ST_MakePoint(:lon, :lat), 4326)
+    LIMIT :limit
+    """, nativeQuery = true)
+    List<StopView> findNearestStops(@Param("lat") double lat, @Param("lon") double lon,
+                                    @Param("limit") int limit);
+
+    // Distance-enriched: candidate pool + actual meters. Backs getNearbyStopsWithDistance().
     @Query(value = """
     SELECT stop_id AS stopId, stop_code AS stopCode, stop_name AS stopName,
-           stop_lat AS stopLat, stop_lon AS stopLon, meters AS distanceMeters 
+           stop_lat AS stopLat, stop_lon AS stopLon, zone_id AS zoneId, meters AS distanceMeters
     FROM (
         SELECT s.*, ST_Distance(s.geom::geography, ST_SetSRID(ST_MakePoint(:lon, :lat), 4326)::geography) AS meters
         FROM stops s
@@ -23,22 +40,9 @@ public interface StopRepository   extends JpaRepository<Stop, String> {
     ORDER BY meters
     LIMIT :limitRows
     """, nativeQuery = true)
-    List<NearbyStopView> findNearestStops(@Param("lat") double lat, @Param("lon") double lon,
-                                          @Param("candidatePoolSize") int candidatePoolSize,
-                                          @Param("limitRows") int limitRows);
-
-    @Query(value = """
-    SELECT stop_id AS stopId, 
-           stop_code AS stopCode, 
-           stop_name AS stopName,
-           stop_lat AS stopLat, 
-           stop_lon AS stopLon, 
-           zone_id AS zoneId
-    FROM stops 
-    ORDER BY geom <-> ST_SetSRID(ST_MakePoint(:lon, :lat), 4326)
-    LIMIT 1
-    """, nativeQuery = true)
-    StopView findNearestStop(@Param("lat") double lat, @Param("lon") double lon);
+    List<NearbyStopView> findNearbyStopsWithDistance(@Param("lat") double lat, @Param("lon") double lon,
+                                                     @Param("candidatePoolSize") int candidatePoolSize,
+                                                     @Param("limitRows") int limitRows);
 
     @Query(value = """
             SELECT

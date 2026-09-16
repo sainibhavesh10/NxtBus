@@ -4,19 +4,17 @@ import java.util.Map;
 
 public class ShapeNotFoundException extends NxtBusException {
 
-    private final String shapeId;
+    private final String lookupType;  // "trip", "route", or "shapeId"
+    private final String lookupValue;
 
-    public ShapeNotFoundException(String shapeId) {
-        super("Shape not found: " + shapeId, ErrorCode.SHAPE_NOT_FOUND);
-        this.shapeId = shapeId;
-    }
-
-    public String getShapeId() {
-        return shapeId;
+    public ShapeNotFoundException(String lookupType, String lookupValue) {
+        super("No shape found for " + lookupType + ": " + lookupValue, ErrorCode.SHAPE_NOT_FOUND);
+        this.lookupType = lookupType;
+        this.lookupValue = lookupValue;
     }
 
     @Override
     public Map<String, Object> getProperties() {
-        return Map.of("shapeId", shapeId);
+        return Map.of("lookupType", lookupType, "lookupValue", lookupValue);
     }
 }

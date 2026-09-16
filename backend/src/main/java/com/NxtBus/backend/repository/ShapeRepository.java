@@ -33,4 +33,14 @@ public interface ShapeRepository extends JpaRepository<Shape, String> {
             LIMIT 1
             """, nativeQuery = true)
     Optional<ShapeView> findGeometryByRouteId(@Param("routeId") String routeId);
+
+    @Query(value = """
+            SELECT
+                s.shape_id   AS shapeId,
+                s.num_points AS numPoints,
+                ST_AsGeoJSON(s.geom) AS geometryJson
+            FROM shapes s
+            WHERE s.shape_id = :shapeId
+            """, nativeQuery = true)
+    Optional<ShapeView> findGeometryByShapeId(@Param("shapeId") String shapeId);
 }

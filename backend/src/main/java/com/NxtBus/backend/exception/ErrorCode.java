@@ -6,6 +6,7 @@ public enum ErrorCode {
 
     ROUTE_NOT_FOUND(HttpStatus.NOT_FOUND, "Route Not Found"),
     STOP_NOT_FOUND(HttpStatus.NOT_FOUND, "Stop Not Found"),
+    NO_STOP_NEAR_LOCATION(HttpStatus.NOT_FOUND, "No Stop Near Location"),
     TRIP_NOT_FOUND(HttpStatus.NOT_FOUND, "Trip Not Found"),
     SHAPE_NOT_FOUND(HttpStatus.NOT_FOUND, "Shape Not Found"),
     NO_TRIPS_FOUND_FOR_ROUTE(HttpStatus.NOT_FOUND, "No Trips For Route"),
