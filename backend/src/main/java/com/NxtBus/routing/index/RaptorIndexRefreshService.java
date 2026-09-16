@@ -11,15 +11,11 @@ import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Rebuilds the RAPTOR index from scratch and publishes it to
- * {@link RaptorIndexHolder}. Runs once at startup, and again on a fixed
- * daily cadence to roll the 3-day continuous window forward.
- */
 @Component
 public class RaptorIndexRefreshService {
 
@@ -43,17 +39,29 @@ public class RaptorIndexRefreshService {
 
     @EventListener(ApplicationReadyEvent.class)
     public void onStartup() {
-        rebuild();
+        try {
+            rebuild();
+        } catch (Exception e) {
+            log.error("Initial RAPTOR index build FAILED at startup for service date {} — " +
+                            "no index is published yet, all routing requests will fail with IndexNotReadyException until the next rebuild",
+                    LocalDate.now(), e);
+        }
     }
 
-    /** Rolls the 3-day continuous window forward. Runs just after midnight
-     *  so "today" picks up the new service date before real traffic starts. */
     @Scheduled(cron = "0 5 0 * * *")
     public void scheduledRebuild() {
-        rebuild();
+        try {
+            rebuild();
+        } catch (Exception e) {
+            Instant last = raptorIndexHolder.getLastSuccessfulRebuild();
+            log.error("Scheduled RAPTOR index rebuild FAILED for service date {} — " +
+                            "serving stale index from last successful build at {}. " +
+                            "Routing requests will continue to work but may reflect outdated schedule data.",
+                    LocalDate.now(), last, e);
+        }
     }
 
-    public void rebuild() {
+    private void rebuild() {
         LocalDate serviceDate = LocalDate.now();
         log.info("Rebuilding RAPTOR index for service date {}", serviceDate);
 

@@ -1,20 +1,26 @@
 package com.nxtbus.routing.index;
 
 import org.springframework.stereotype.Component;
+
+import java.time.Instant;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Component
 public class RaptorIndexHolder {
 
     private final AtomicReference<RaptorSnapshot> current = new AtomicReference<>();
+    private final AtomicReference<Instant> lastSuccessfulRebuild = new AtomicReference<>();
 
     public RaptorSnapshot get() { return current.get(); }
+
+    public Instant getLastSuccessfulRebuild() { return lastSuccessfulRebuild.get(); }
 
     /** Full rebuild always resets exclusions -- materialize() already
      *  re-derives CANCEL/UNDEFINED from the DB fresh. The overlay only
      *  bridges the gap until the next rebuild picks up a live change. */
     public void publishFullRebuild(RaptorIndex index) {
         current.set(new RaptorSnapshot(index, new boolean[index.totalTripCount()]));
+        lastSuccessfulRebuild.set(Instant.now());
     }
 
     public void excludeTrip(String tripId) { setExcluded(tripId, true); }
