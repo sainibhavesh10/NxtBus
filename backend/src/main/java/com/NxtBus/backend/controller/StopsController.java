@@ -2,8 +2,9 @@ package com.nxtbus.backend.controller;
 
 import com.nxtbus.backend.dto.NearbyStopDto;
 import com.nxtbus.backend.dto.StopDto;
+import com.nxtbus.backend.request.SearchRequest;
 import com.nxtbus.backend.request.StopProximityRequest;
-import com.nxtbus.backend.request.StopSearchRequest;
+import com.nxtbus.backend.request.SearchRequest;
 import com.nxtbus.backend.service.StopService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +24,7 @@ public class StopsController {
     }
 
     @GetMapping("/search")
-    public List<StopDto> searchStopsByName(@Valid @ModelAttribute StopSearchRequest request) {
+    public List<StopDto> searchStopsByName(@Valid @ModelAttribute SearchRequest request) {
         return stopService.searchStopsByName(request);
     }
 

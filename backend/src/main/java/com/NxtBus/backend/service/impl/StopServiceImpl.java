@@ -6,8 +6,9 @@ import com.nxtbus.backend.exception.StopNotFoundException;
 import com.nxtbus.backend.repository.StopRepository;
 import com.nxtbus.backend.repository.projection.NearbyStopView;
 import com.nxtbus.backend.repository.projection.StopView;
+import com.nxtbus.backend.request.SearchRequest;
 import com.nxtbus.backend.request.StopProximityRequest;
-import com.nxtbus.backend.request.StopSearchRequest;
+import com.nxtbus.backend.request.SearchRequest;
 import com.nxtbus.backend.service.StopService;
 import org.springframework.stereotype.Service;
 
@@ -39,7 +40,7 @@ public class StopServiceImpl implements StopService {
     }
 
     @Override
-    public List<StopDto> searchStopsByName(StopSearchRequest request) {
+    public List<StopDto> searchStopsByName(SearchRequest request) {
         int safeLimit = Math.min(request.limit(), MAX_SEARCH_RESULT_LIMIT);
         return stopRepository.searchByName(request.query().trim(), safeLimit).stream()
                 .map(StopDto::from)

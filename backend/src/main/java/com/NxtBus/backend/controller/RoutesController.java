@@ -1,6 +1,7 @@
 package com.nxtbus.backend.controller;
 
 import com.nxtbus.backend.dto.*;
+import com.nxtbus.backend.request.SearchRequest;
 import com.nxtbus.backend.response.GeoJsonFeatureResponse;
 import com.nxtbus.backend.response.PagedResponse;
 import com.nxtbus.backend.response.RouteStopSequenceResponse;
@@ -8,6 +9,7 @@ import com.nxtbus.backend.service.RouteService;
 import com.nxtbus.backend.service.ShapeService;
 import com.nxtbus.backend.service.StopTimeService;
 import com.nxtbus.backend.service.TripService;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
@@ -36,11 +38,8 @@ public class RoutesController {
     }
 
     @GetMapping("/search")
-    public List<RouteDto> searchRoutes(
-            @RequestParam String query,
-            @RequestParam(defaultValue = "3") int limit
-    ) {
-        return routeService.searchRoutes(query,limit);
+    public List<RouteDto> searchRoutes(@Valid @ModelAttribute SearchRequest request) {
+        return routeService.searchRoutes(request);
     }
 
     @GetMapping("/{routeId}")
@@ -74,7 +73,6 @@ public class RoutesController {
     @GetMapping("/{routeId}/shape")
     public GeoJsonFeatureResponse<RouteShapeProperties> getShape(@PathVariable String routeId) {
         RouteDto route = routeService.getRouteById(routeId);
-        //check if the given route has a trip or not
         tripService.getRepresentativeTrip(routeId);
         ShapeDto shape = shapeService.getShapeByRouteId(routeId);
         return GeoJsonFeatureResponse.of(

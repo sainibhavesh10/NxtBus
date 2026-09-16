@@ -4,7 +4,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-public record StopSearchRequest(
+public record SearchRequest(
         @NotBlank(message = "Search query must not be blank")
         @Size(min = 3, message = "Search query must be at least 3 characters")
         String query,
@@ -12,9 +12,9 @@ public record StopSearchRequest(
         @Min(value = 1, message = "Limit must be at least 1")
         int limit
 ) {
-    public StopSearchRequest {
+    public SearchRequest {
         if (limit == 0) {
-            limit = 3;
+            limit = 10; // default when omitted
         }
     }
 }
