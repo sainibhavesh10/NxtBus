@@ -121,8 +121,10 @@ public class RaptorEngine {
         while (stop != source && parent[stop] != null) {
             ParentLabel label = parent[stop];
             if (label.isWalk()) {
-                legs.addFirst(JourneyLeg.walk(index.stopId(label.fromStop()), index.stopId(stop)));
-                stop = label.fromStop();
+                legs.addFirst(JourneyLeg.walk(
+                        index.stopId(label.fromStop), index.stopId(stop),
+                        earliestArrival[label.fromStop], earliestArrival[stop]));
+                stop = label.fromStop;
             } else {
                 int boardStop = index.stopInRoute(label.route(), label.boardPos());
                 String tripId = index.tripId(index.tripPos(label.route(), label.tripIdxInRoute()));

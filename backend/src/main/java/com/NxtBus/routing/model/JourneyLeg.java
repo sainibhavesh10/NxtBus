@@ -9,7 +9,7 @@ public record JourneyLeg(
     public static JourneyLeg ride(String routeName, String tripId, String from, String to, int dep, int arr) {
         return new JourneyLeg(LegType.RIDE, routeName, tripId, from, to, dep, arr);
     }
-    public static JourneyLeg walk(String from, String to) {
-        return new JourneyLeg(LegType.WALK, null, null, from, to, -1, -1);
+    public static JourneyLeg walk(String from, String to, int dep, int arr) {
+        return new JourneyLeg(LegType.WALK, null, null, from, to, dep, arr);
     }
 }
