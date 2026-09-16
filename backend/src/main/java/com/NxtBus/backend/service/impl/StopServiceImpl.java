@@ -62,4 +62,9 @@ public class StopServiceImpl implements StopService {
                 .toList();
     }
 
+    @Override
+    public StopDto getNearestStop(double lat, double lon){
+        return StopDto.from(stopRepository.findNearestStop(lat, lon));
+    }
+
 }

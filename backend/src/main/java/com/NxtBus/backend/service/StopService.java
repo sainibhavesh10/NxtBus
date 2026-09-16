@@ -18,4 +18,6 @@ public interface StopService {
             double lon,
             int limit
     );
+
+    StopDto getNearestStop(double lat, double lon);
 }

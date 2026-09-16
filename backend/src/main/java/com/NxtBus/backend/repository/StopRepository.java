@@ -28,6 +28,19 @@ public interface StopRepository   extends JpaRepository<Stop, String> {
                                           @Param("limitRows") int limitRows);
 
     @Query(value = """
+    SELECT stop_id AS stopId, 
+           stop_code AS stopCode, 
+           stop_name AS stopName,
+           stop_lat AS stopLat, 
+           stop_lon AS stopLon, 
+           zone_id AS zoneId
+    FROM stops 
+    ORDER BY geom <-> ST_SetSRID(ST_MakePoint(:lon, :lat), 4326)
+    LIMIT 1
+    """, nativeQuery = true)
+    StopView findNearestStop(@Param("lat") double lat, @Param("lon") double lon);
+
+    @Query(value = """
             SELECT
                 stop_id   AS stopId,
                 stop_code AS stopCode,
