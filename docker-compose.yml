@@ -1,6 +1,7 @@
 services:
   postgres:
     image: postgis/postgis:17-3.5
+    platform: linux/amd64
     container_name: nxtbus_postgres
     restart: unless-stopped
     environment:
@@ -13,7 +14,7 @@ services:
       - nxtbus_postgres_data:/var/lib/postgresql/data
       - ./data/gtfs:/gtfs:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -30,18 +31,30 @@ services:
     depends_on:
       - postgres
 
-  # Self-hosted OSRM foot-routing server. Data is prepared once via
-  # scripts/setup_osrm.sh (see that script for instructions), which
-  # produces the .osrm* files this container serves from ./data/osrm.
-  osrm:
+  # Self-hosted OSRM foot-routing server (walking transfers between stops).
+  # Data prepared via: ./scripts/setup_osrm.sh <pbf_url> foot
+  osrm-foot:
     image: osrm/osrm-backend
-    container_name: nxtbus_osrm
+    container_name: nxtbus_osrm_foot
     restart: unless-stopped
     command: osrm-routed --algorithm mld --max-table-size 1000000 /data/map.osrm
     volumes:
-      - ./data/osrm:/data
+      - ./data/osrm/foot:/data
     ports:
-      - "5001:5000"
+      - "5001:5000"  # host 5000 is often taken by macOS AirPlay Receiver
+
+  # Self-hosted OSRM driving-profile server (used as a road-network
+  # approximation for bus trip shapes). Data prepared via:
+  # ./scripts/setup_osrm.sh <pbf_url> car
+  osrm-car:
+    image: osrm/osrm-backend
+    container_name: nxtbus_osrm_car
+    restart: unless-stopped
+    command: osrm-routed --algorithm mld --max-table-size 1000000 /data/map.osrm
+    volumes:
+      - ./data/osrm/car:/data
+    ports:
+      - "5002:5000"
 
   backend:
     build:
