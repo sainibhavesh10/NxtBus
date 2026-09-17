@@ -10,11 +10,11 @@ public record SearchRequest(
         String query,
 
         @Min(value = 1, message = "Limit must be at least 1")
-        int limit
+        Integer limit
 ) {
     public SearchRequest {
-        if (limit == 0) {
-            limit = 10; // default when omitted
+        if (limit == null) {
+            limit = 10;
         }
     }
 }

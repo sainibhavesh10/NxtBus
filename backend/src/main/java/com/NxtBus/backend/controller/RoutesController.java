@@ -1,6 +1,7 @@
 package com.nxtbus.backend.controller;
 
 import com.nxtbus.backend.dto.*;
+import com.nxtbus.backend.request.PageRequestDto;
 import com.nxtbus.backend.request.SearchRequest;
 import com.nxtbus.backend.response.GeoJsonFeatureResponse;
 import com.nxtbus.backend.response.PagedResponse;
@@ -50,10 +51,9 @@ public class RoutesController {
     @GetMapping("{routeId}/trips")
     public PagedResponse<TripDto> getTripsByRoute(
             @PathVariable String routeId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @Valid @ModelAttribute PageRequestDto pageRequest) {
 
-        Page<TripDto> result = tripService.getTripsByRoute(routeId, page, size);
+        Page<TripDto> result = tripService.getTripsByRoute(routeId, pageRequest);
         return PagedResponse.from(result);
     }
 
