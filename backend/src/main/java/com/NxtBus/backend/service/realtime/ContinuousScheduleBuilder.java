@@ -4,6 +4,7 @@ import com.nxtbus.backend.dto.realtime.ContinuousSchedule;
 import com.nxtbus.backend.dto.realtime.EffectiveScheduleSnapshot;
 import com.nxtbus.backend.dto.realtime.StopTimeEntry;
 import com.nxtbus.backend.dto.realtime.TripSchedule;
+import com.nxtbus.backend.exception.CorruptScheduleDataException;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
@@ -96,8 +97,8 @@ public class ContinuousScheduleBuilder {
     private static StopTimeEntry firstStop(TripSchedule trip) {
         return trip.stopTimes().stream()
                 .min(Comparator.comparingInt(StopTimeEntry::stopSequence))
-                .orElseThrow(() -> new IllegalStateException(
-                        "Trip " + trip.tripId() + " has no stop times"));
+                .orElseThrow(() -> new CorruptScheduleDataException("trip", trip.tripId(), "trip has no stop times"));
+
     }
 
     private static TripSchedule shiftAndPrefix(TripSchedule trip, String prefix, int offsetSeconds) {
