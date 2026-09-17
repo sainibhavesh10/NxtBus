@@ -3,6 +3,7 @@ package com.nxtbus.backend.service.impl;
 import com.nxtbus.backend.dto.*;
 import com.nxtbus.backend.repository.StopTimeRepository;
 import com.nxtbus.backend.request.TimeWindowRequest;
+import com.nxtbus.backend.service.RouteService;
 import com.nxtbus.backend.service.StopService;
 import com.nxtbus.backend.service.StopTimeService;
 import com.nxtbus.backend.service.TripService;
@@ -16,12 +17,14 @@ public class StopTimeServiceImpl implements StopTimeService {
     private final StopTimeRepository stopTimeRepository;
     private final TripService tripService;
     private final StopService stopService;
+    private final RouteService routeService;
 
     public StopTimeServiceImpl(StopTimeRepository stopTimeRepository, TripService tripService,
-                               StopService stopService) {
+                               StopService stopService, RouteService routeService) {
         this.stopTimeRepository = stopTimeRepository;
         this.tripService = tripService;
         this.stopService = stopService;
+        this.routeService = routeService;
     }
 
     @Override
@@ -48,9 +51,9 @@ public class StopTimeServiceImpl implements StopTimeService {
 
     @Override
     public List<StopSequenceDto> getStopSequenceForRoute(String routeId) {
-        TripDto representativeTrip = tripService.getRepresentativeTrip(routeId);
-
-        return stopTimeRepository.findStopsByTripId(representativeTrip.tripId())
+        routeService.validateRouteExists(routeId);
+        tripService.validateRouteHasTrips(routeId);
+        return stopTimeRepository.findStopSequenceByRouteId(routeId)
                 .stream()
                 .map(StopSequenceDto::from)
                 .toList();

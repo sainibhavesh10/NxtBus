@@ -36,19 +36,17 @@ public class TripServiceImpl implements TripService {
     }
 
     @Override
+    public void validateRouteHasTrips(String routeId) {
+        if (!tripRepository.existsByRouteId(routeId)) {
+            throw new NoTripsFoundForRouteException(routeId);
+        }
+    }
+
+    @Override
     public TripDto getTripById(String tripId) {
         Trip trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new TripNotFoundException(tripId));
         return TripDto.from(trip);
-    }
-
-    @Override
-    public TripDto getRepresentativeTrip(String routeId) {
-        Page<TripDto> trips = getTripsByRoute(routeId, new PageRequestDto(0, 1)); // page 0, size 1 -> first tripId alphabetically
-        if (trips.isEmpty()) {
-            throw new NoTripsFoundForRouteException(routeId);
-        }
-        return trips.getContent().getFirst();
     }
 
     @Override

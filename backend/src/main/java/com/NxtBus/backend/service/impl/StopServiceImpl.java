@@ -8,7 +8,6 @@ import com.nxtbus.backend.repository.projection.NearbyStopView;
 import com.nxtbus.backend.repository.projection.StopView;
 import com.nxtbus.backend.request.SearchRequest;
 import com.nxtbus.backend.request.StopProximityRequest;
-import com.nxtbus.backend.request.SearchRequest;
 import com.nxtbus.backend.service.StopService;
 import org.springframework.stereotype.Service;
 

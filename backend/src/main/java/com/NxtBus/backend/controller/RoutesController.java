@@ -73,7 +73,6 @@ public class RoutesController {
     @GetMapping("/{routeId}/shape")
     public GeoJsonFeatureResponse<RouteShapeProperties> getShape(@PathVariable String routeId) {
         RouteDto route = routeService.getRouteById(routeId);
-        tripService.getRepresentativeTrip(routeId);
         ShapeDto shape = shapeService.getShapeByRouteId(routeId);
         return GeoJsonFeatureResponse.of(
                 new RouteShapeProperties(route,shape.shapeId()),
