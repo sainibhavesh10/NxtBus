@@ -1,10 +1,13 @@
 package com.nxtbus.backend.controller;
 
+import com.nxtbus.backend.request.JourneyByLocationRequest;
+import com.nxtbus.backend.request.JourneyByStopsRequest;
 import com.nxtbus.backend.response.JourneyResponse;
 import com.nxtbus.backend.service.JourneyService;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -13,25 +16,17 @@ public class JourneyController {
 
     private final JourneyService journeyService;
 
-    public JourneyController(JourneyService journeyService){
+    public JourneyController(JourneyService journeyService) {
         this.journeyService = journeyService;
     }
 
     @GetMapping("/plan/stops")
-    public JourneyResponse planByStopIds(@RequestParam String from, @RequestParam String to,
-                                @RequestParam int departTimeSeconds) {
-        return JourneyResponse.from(journeyService.planJourney(from, to, departTimeSeconds));
+    public JourneyResponse planByStopIds(@Valid @ModelAttribute JourneyByStopsRequest request) {
+        return JourneyResponse.from(journeyService.planJourney(request));
     }
 
     @GetMapping("/plan/coordinates")
-    public JourneyResponse planByCoordinates(
-            @RequestParam double fromLat,
-            @RequestParam double fromLon,
-            @RequestParam double toLat,
-            @RequestParam double toLon,
-            @RequestParam int departTimeSeconds) {
-
-        return JourneyResponse.from(
-                journeyService.planJourney(fromLat, fromLon, toLat, toLon, departTimeSeconds));
+    public JourneyResponse planByCoordinates(@Valid @ModelAttribute JourneyByLocationRequest request) {
+        return JourneyResponse.from(journeyService.planJourney(request));
     }
 }

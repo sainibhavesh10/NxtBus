@@ -22,15 +22,26 @@ public interface ShapeRepository extends JpaRepository<Shape, String> {
     Optional<ShapeView> findGeometryByTripId(@Param("tripId") String tripId);
 
     @Query(value = """
+        SELECT
+            s.shape_id   AS shapeId,
+            s.num_points AS numPoints,
+            ST_AsGeoJSON(s.geom) AS geometryJson
+        FROM trips t
+        JOIN shapes s ON s.shape_id = t.shape_id
+        WHERE t.route_id = :routeId
+          AND t.shape_id IS NOT NULL
+        ORDER BY t.trip_id ASC
+        LIMIT 1
+        """, nativeQuery = true)
+    Optional<ShapeView> findGeometryByRouteId(@Param("routeId") String routeId);
+
+    @Query(value = """
             SELECT
                 s.shape_id   AS shapeId,
                 s.num_points AS numPoints,
                 ST_AsGeoJSON(s.geom) AS geometryJson
-            FROM trips t
-            JOIN shapes s ON s.shape_id = t.shape_id
-            WHERE t.route_id = :routeId
-            ORDER BY t.trip_id ASC
-            LIMIT 1
+            FROM shapes s
+            WHERE s.shape_id = :shapeId
             """, nativeQuery = true)
-    Optional<ShapeView> findGeometryByRouteId(@Param("routeId") String routeId);
+    Optional<ShapeView> findGeometryByShapeId(@Param("shapeId") String shapeId);
 }

@@ -4,6 +4,7 @@ import com.nxtbus.backend.dto.RouteDto;
 import com.nxtbus.backend.entity.Route;
 import com.nxtbus.backend.exception.RouteNotFoundException;
 import com.nxtbus.backend.repository.RouteRepository;
+import com.nxtbus.backend.request.SearchRequest;
 import com.nxtbus.backend.service.RouteService;
 import org.springframework.stereotype.Service;
 
@@ -22,17 +23,9 @@ public class RouteServiceImpl implements RouteService {
     }
 
     @Override
-    public List<RouteDto> searchRoutes(String query, int limit) {
-        if (query == null) {
-            return List.of();
-        }
-        String withoutSpaces = query.replaceAll("\\s+", "");
-        if (withoutSpaces.length() < MIN_SEARCH_QUERY_LENGTH) {
-            return List.of();
-        }
-        int safeLimit = Math.max(1, Math.min(limit, MAX_SEARCH_RESULT_LIMIT));
-
-        return routeRepository.searchRouteByName(query.trim(),safeLimit)
+    public List<RouteDto> searchRoutes(SearchRequest request) {
+        int safeLimit = Math.min(request.limit(), MAX_SEARCH_RESULT_LIMIT);
+        return routeRepository.searchRouteByName(request.query().trim(), safeLimit)
                 .stream()
                 .map(RouteDto::from)
                 .toList();

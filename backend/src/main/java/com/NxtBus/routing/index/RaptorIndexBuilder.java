@@ -4,6 +4,7 @@ import com.nxtbus.backend.dto.realtime.ContinuousSchedule;
 import com.nxtbus.backend.dto.realtime.FootpathEdge;
 import com.nxtbus.backend.dto.realtime.StopTimeEntry;
 import com.nxtbus.backend.dto.realtime.TripSchedule;
+import com.nxtbus.backend.exception.CorruptScheduleDataException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -62,8 +63,7 @@ public class RaptorIndexBuilder {
 
             for (TripSchedule trip : tripsInRoute) {
                 if (trip.stopTimes().size() != signature.size()) {
-                    throw new IllegalStateException(
-                            "Trip " + trip.tripId() + " stop count doesn't match its own route signature");
+                    throw new CorruptScheduleDataException("trip", trip.tripId(), "stop count doesn't match its own route signature");
                 }
                 int tripPos = tripIdByTripPosList.size();
                 tripIdByTripPosList.add(trip.tripId());

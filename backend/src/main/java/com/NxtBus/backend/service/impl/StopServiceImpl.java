@@ -1,10 +1,13 @@
 package com.nxtbus.backend.service.impl;
 
-import com.nxtbus.backend.entity.Stop;
-import com.nxtbus.backend.exception.StopNotFoundException;
-import com.nxtbus.backend.repository.StopRepository;
 import com.nxtbus.backend.dto.NearbyStopDto;
 import com.nxtbus.backend.dto.StopDto;
+import com.nxtbus.backend.exception.StopNotFoundException;
+import com.nxtbus.backend.repository.StopRepository;
+import com.nxtbus.backend.repository.projection.NearbyStopView;
+import com.nxtbus.backend.repository.projection.StopView;
+import com.nxtbus.backend.request.SearchRequest;
+import com.nxtbus.backend.request.StopProximityRequest;
 import com.nxtbus.backend.service.StopService;
 import org.springframework.stereotype.Service;
 
@@ -13,9 +16,7 @@ import java.util.List;
 @Service
 public class StopServiceImpl implements StopService {
 
-    private static final int MIN_SEARCH_QUERY_LENGTH = 3;
     private static final int MAX_SEARCH_RESULT_LIMIT = 50;
-
 
     private final StopRepository stopRepository;
 
@@ -32,39 +33,36 @@ public class StopServiceImpl implements StopService {
 
     @Override
     public StopDto getStopById(String stopId) {
-        Stop stop = stopRepository.findById(stopId)
+        var stop = stopRepository.findById(stopId)
                 .orElseThrow(() -> new StopNotFoundException(stopId));
         return StopDto.from(stop);
     }
 
     @Override
-    public List<StopDto> searchStopsByName(String query, int limit) {
-        if (query == null) {
-            return List.of();
-        }
-        String withoutSpaces = query.replaceAll("\\s+", "");
-        //later throw exception here
-        if (withoutSpaces.length() < MIN_SEARCH_QUERY_LENGTH) {
-            return List.of();
-        }
-        int safeLimit = Math.max(1, Math.min(limit, MAX_SEARCH_RESULT_LIMIT));
-        return stopRepository.searchByName(query.trim(), safeLimit).stream()
+    public List<StopDto> searchStopsByName(SearchRequest request) {
+        int safeLimit = Math.min(request.limit(), MAX_SEARCH_RESULT_LIMIT);
+        return stopRepository.searchByName(request.query().trim(), safeLimit).stream()
                 .map(StopDto::from)
                 .toList();
     }
 
     @Override
-    public List<NearbyStopDto> getNearbyStops(double lat, double lon, int limit) {
-        int safeLimit = Math.max(1, Math.min(limit, MAX_SEARCH_RESULT_LIMIT));
-        return stopRepository.findNearestStops(lat, lon, safeLimit * 4, safeLimit)
-                .stream()
-                .map(NearbyStopDto::from)
+    public List<StopDto> getNearestStops(StopProximityRequest request) {
+        int safeLimit = Math.max(1, Math.min(request.limit(), MAX_SEARCH_RESULT_LIMIT));
+        List<StopView> views = stopRepository.findNearestStops(request.lat(), request.lon(), safeLimit);
+        return views.stream()
+                .map(StopDto::from)
                 .toList();
     }
 
     @Override
-    public StopDto getNearestStop(double lat, double lon){
-        return StopDto.from(stopRepository.findNearestStop(lat, lon));
+    public List<NearbyStopDto> getNearbyStopsWithDistance(StopProximityRequest request) {
+        int safeLimit = Math.min(request.limit(), MAX_SEARCH_RESULT_LIMIT);
+        List<NearbyStopView> views = stopRepository.findNearbyStopsWithDistance(
+                request.lat(), request.lon(), safeLimit * 4, safeLimit);
+        return views.stream()
+                .map(NearbyStopDto::from)
+                .toList();
     }
 
 }

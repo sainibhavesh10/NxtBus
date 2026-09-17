@@ -1,6 +1,7 @@
 package com.nxtbus.backend.repository;
 
 import com.nxtbus.backend.entity.StopTime;
+import com.nxtbus.backend.repository.projection.StopSequenceView;
 import com.nxtbus.backend.repository.projection.TimedStopSequenceView;
 import com.nxtbus.backend.repository.projection.UpcomingDepartureView;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -73,4 +74,22 @@ public interface StopTimeRepository extends JpaRepository<StopTime, StopTime.Sto
         ORDER BY st.stop_sequence
         """, nativeQuery = true)
     List<TimedStopSequenceView> findStopsByTripId(@Param("tripId") String tripId);
+
+    @Query(value = """
+    SELECT st.stop_id       AS stopId,
+           st.stop_sequence AS stopSequence,
+           s.stop_name      AS stopName,
+           s.stop_code      AS stopCode,
+           s.lat            AS lat,
+           s.lon            AS lon
+    FROM trips t
+    JOIN stop_times st ON st.trip_id = t.trip_id
+    JOIN stops s ON s.stop_id = st.stop_id
+    WHERE t.route_id = :routeId
+    AND t.trip_id = (
+        SELECT trip_id FROM trips WHERE route_id = :routeId ORDER BY trip_id ASC LIMIT 1
+    )
+    ORDER BY st.stop_sequence
+    """, nativeQuery = true)
+    List<StopSequenceView> findStopSequenceByRouteId(@Param("routeId") String routeId);
 }
