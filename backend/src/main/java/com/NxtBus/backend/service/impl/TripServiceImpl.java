@@ -4,6 +4,8 @@ import com.nxtbus.backend.dto.*;
 import com.nxtbus.backend.entity.Trip;
 import com.nxtbus.backend.exception.*;
 import com.nxtbus.backend.repository.TripRepository;
+import com.nxtbus.backend.request.PageRequestDto;
+import com.nxtbus.backend.service.RouteService;
 import com.nxtbus.backend.service.TripService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -18,15 +20,25 @@ public class TripServiceImpl implements TripService {
 
     private final TripRepository tripRepository;
 
+    private final RouteService routeService;
 
-    public TripServiceImpl(TripRepository tripRepository){
+
+    public TripServiceImpl(TripRepository tripRepository, RouteService routeService){
         this.tripRepository = tripRepository;
+        this.routeService = routeService;
     }
 
     @Override
     public void validateTripExists(String tripId) {
         if (!tripRepository.existsById(tripId)) {
             throw new TripNotFoundException(tripId);
+        }
+    }
+
+    @Override
+    public void validateRouteHasTrips(String routeId) {
+        if (!tripRepository.existsByRouteId(routeId)) {
+            throw new NoTripsFoundForRouteException(routeId);
         }
     }
 
@@ -38,21 +50,11 @@ public class TripServiceImpl implements TripService {
     }
 
     @Override
-    public TripDto getRepresentativeTrip(String routeId) {
-        Page<TripDto> trips = getTripsByRoute(routeId, 0, 1); // page 0, size 1 -> first tripId alphabetically
-        if (trips.isEmpty()) {
-            throw new NoTripsFoundForRouteException(routeId);
-        }
-        return trips.getContent().getFirst();
-    }
+    public Page<TripDto> getTripsByRoute(String routeId, PageRequestDto pageRequest) {
+        int cappedSize = Math.min(pageRequest.size(), MAX_PAGE_SIZE);
+        Pageable pageable = PageRequest.of(pageRequest.page(), cappedSize, Sort.by("tripId").ascending());
 
-    @Override
-    public Page<TripDto> getTripsByRoute(String routeId, int page, int size) {
-        int cappedSize = Math.min(size, MAX_PAGE_SIZE);
-        Pageable pageable = PageRequest.of(page, cappedSize, Sort.by("tripId").ascending());
-
-        return tripRepository.findByRouteId(routeId, pageable).
-                map(TripDto::from);
+        return tripRepository.findByRouteId(routeId, pageable).map(TripDto::from);
     }
 
 }

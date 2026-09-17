@@ -1,12 +1,11 @@
 package com.nxtbus.backend.repository.projection;
 
-public interface TimedStopSequenceView {
+public interface StopSequenceView {
     Integer getStopSequence();
     String getStopId();
     String getStopName();
     String getStopCode();
-    Integer getArrivalTime();
-    Integer getDepartureTime();
     Double getLat();
     Double getLon();
 }
+

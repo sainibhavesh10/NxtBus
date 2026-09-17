@@ -2,9 +2,11 @@ package com.nxtbus.backend.controller;
 
 import com.nxtbus.backend.dto.DepartureDto;
 import com.nxtbus.backend.dto.StopDto;
+import com.nxtbus.backend.request.TimeWindowRequest;
 import com.nxtbus.backend.response.UpcomingDepartureResponse;
 import com.nxtbus.backend.service.StopService;
 import com.nxtbus.backend.service.StopTimeService;
+import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,28 +33,14 @@ public class DepartureController {
     @GetMapping("/{stopId}/departures")
     public UpcomingDepartureResponse getUpcomingDepartures(
             @PathVariable String stopId,
-            @RequestParam(defaultValue = "3") int limit,
-            @RequestParam(required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
-            @RequestParam(required = false)
-            @DateTimeFormat(pattern = "HH:mm") LocalTime time) {
-
-        ZonedDateTime now = ZonedDateTime.now(DELHI_ZONE);
-
-        LocalDate effectiveDate = (date != null) ? date : now.toLocalDate();
-        LocalTime effectiveTime = (time != null) ? time : now.toLocalTime();
+            @Valid @ModelAttribute TimeWindowRequest request) {
 
         StopDto stop = stopService.getStopById(stopId);
 
-        List<DepartureDto> departures = stopTimeService
-                .getUpcomingDepartures(stopId, effectiveDate, effectiveTime, limit);
+        List<DepartureDto> departures = stopTimeService.getUpcomingDepartures(
+                stopId, request);
 
         return new UpcomingDepartureResponse(
-                stop.stopId(),
-                stop.stopName(),
-                effectiveDate,
-                effectiveTime,
-                departures
-        );
+                stop.stopId(), stop.stopName(), request.date(), request.time(), departures);
     }
 }

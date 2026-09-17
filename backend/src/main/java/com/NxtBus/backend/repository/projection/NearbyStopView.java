@@ -6,5 +6,6 @@ public interface NearbyStopView {
     String getStopName();
     Double getStopLat();
     Double getStopLon();
+    String getZoneId();
     Double getDistanceMeters();
 }

@@ -2,6 +2,9 @@ package com.nxtbus.backend.service;
 
 import com.nxtbus.backend.dto.NearbyStopDto;
 import com.nxtbus.backend.dto.StopDto;
+import com.nxtbus.backend.request.SearchRequest;
+import com.nxtbus.backend.request.StopProximityRequest;
+import com.nxtbus.backend.request.SearchRequest;
 
 import java.util.List;
 
@@ -11,13 +14,9 @@ public interface StopService {
 
     StopDto getStopById(String stopId);
 
-    List<StopDto> searchStopsByName(String query, int limit);
+    List<StopDto> searchStopsByName(SearchRequest request);
 
-    List<NearbyStopDto> getNearbyStops(
-            double lat,
-            double lon,
-            int limit
-    );
+    List<StopDto> getNearestStops(StopProximityRequest request);
 
-    StopDto getNearestStop(double lat, double lon);
+    List<NearbyStopDto> getNearbyStopsWithDistance(StopProximityRequest request);
 }
