@@ -8,9 +8,9 @@ public interface TripService {
 
     void validateTripExists(String tripId);
 
-    TripDto getTripById(String tripId);
+    void validateRouteHasTrips(String routeId);
 
-    TripDto getRepresentativeTrip(String routeId);
+    TripDto getTripById(String tripId);
 
     Page<TripDto> getTripsByRoute(String routeId, PageRequestDto pageRequest);
 }
