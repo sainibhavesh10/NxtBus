@@ -13,6 +13,7 @@ public enum ErrorCode {
     NO_JOURNEY_FOUND(HttpStatus.NOT_FOUND, "No Journey Found"),
     INDEX_NOT_READY(HttpStatus.SERVICE_UNAVAILABLE, "Index Not Ready"),
     VALIDATION_FAILED(HttpStatus.BAD_REQUEST, "Validation Failed"),
+    CORRUPT_SCHEDULE_DATA(HttpStatus.INTERNAL_SERVER_ERROR, "Corrupt Schedule Data"),
     INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error");
 
     private final HttpStatus status;
