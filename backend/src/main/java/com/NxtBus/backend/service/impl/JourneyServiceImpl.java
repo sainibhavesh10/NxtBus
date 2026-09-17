@@ -2,6 +2,8 @@ package com.nxtbus.backend.service.impl;
 
 import com.nxtbus.backend.dto.StopDto;
 import com.nxtbus.backend.exception.NoStopNearLocationException;
+import com.nxtbus.backend.request.JourneyByLocationRequest;
+import com.nxtbus.backend.request.JourneyByStopsRequest;
 import com.nxtbus.backend.request.StopProximityRequest;
 import com.nxtbus.backend.service.JourneyService;
 import com.nxtbus.backend.service.StopService;
@@ -23,25 +25,30 @@ public class JourneyServiceImpl implements JourneyService {
     }
 
     @Override
-    public Journey planJourney(String fromStopId, String toStopId, int departTimeSeconds) {
-        return raptorService.planJourney(fromStopId, toStopId, departTimeSeconds);
+    public Journey planJourney(JourneyByStopsRequest request) {
+        stopService.validateStopExists(request.fromStopId());
+        stopService.validateStopExists(request.toStopId());
+
+        return raptorService.planJourney(request.fromStopId(), request.toStopId(), request.departTimeSeconds());
     }
 
     @Override
-    public Journey planJourney(double fromLat, double fromLon, double toLat, double toLon, int departTimeSeconds) {
-        List<StopDto> fromCandidates = stopService.getNearestStops(new StopProximityRequest(fromLat, fromLon, 1));
+    public Journey planJourney(JourneyByLocationRequest request) {
+        List<StopDto> fromCandidates = stopService.getNearestStops(
+                new StopProximityRequest(request.fromLat(), request.fromLon(), 1));
         if (fromCandidates.isEmpty()) {
-            throw new NoStopNearLocationException(fromLat, fromLon);
+            throw new NoStopNearLocationException(request.fromLat(), request.fromLon());
         }
         String fromStopId = fromCandidates.getFirst().stopId();
 
-        List<StopDto> toCandidates = stopService.getNearestStops(new StopProximityRequest(toLat, toLon, 1));
+        List<StopDto> toCandidates = stopService.getNearestStops(
+                new StopProximityRequest(request.toLat(), request.toLon(), 1));
         if (toCandidates.isEmpty()) {
-            throw new NoStopNearLocationException(toLat, toLon);
+            throw new NoStopNearLocationException(request.toLat(), request.toLon());
         }
         String toStopId = toCandidates.getFirst().stopId();
 
-        return raptorService.planJourney(fromStopId, toStopId, departTimeSeconds);
+        return raptorService.planJourney(fromStopId, toStopId, request.departTimeSeconds());
     }
 
 }
