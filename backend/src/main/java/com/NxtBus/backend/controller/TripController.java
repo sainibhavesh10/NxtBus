@@ -7,10 +7,7 @@ import com.nxtbus.backend.service.RouteService;
 import com.nxtbus.backend.service.ShapeService;
 import com.nxtbus.backend.service.StopTimeService;
 import com.nxtbus.backend.service.TripService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -69,5 +66,15 @@ public class TripController {
                 new TripShapeProperties(trip,shape.shapeId()),
                 shape.geom()
         );
+    }
+
+    @PostMapping
+    public TripDto saveTrip(@RequestBody TripDto tripDto) {
+        return tripService.saveTrip(tripDto);
+    }
+
+    @DeleteMapping("/{tripId}")
+    public void deleteTrip(@PathVariable String tripId) {
+        tripService.deleteTrip(tripId);
     }
 }
