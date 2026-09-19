@@ -13,4 +13,8 @@ public interface TripService {
     TripDto getTripById(String tripId);
 
     Page<TripDto> getTripsByRoute(String routeId, PageRequestDto pageRequest);
+
+    TripDto saveTrip(TripDto tripDto);
+
+    void deleteTrip(String tripId);
 }
