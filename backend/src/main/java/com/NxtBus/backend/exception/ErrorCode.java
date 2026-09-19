@@ -9,6 +9,8 @@ public enum ErrorCode {
     NO_STOP_NEAR_LOCATION(HttpStatus.NOT_FOUND, "No Stop Near Location"),
     TRIP_NOT_FOUND(HttpStatus.NOT_FOUND, "Trip Not Found"),
     TRIP_DATE_NOT_FOUND(HttpStatus.NOT_FOUND, "Trip Date Not Found"),
+    CALENDAR_NOT_FOUND(HttpStatus.NOT_FOUND, "Calendar Not Found"),
+    AGENCY_NOT_FOUND(HttpStatus.NOT_FOUND, "Agency Not Found"),
     SHAPE_NOT_FOUND(HttpStatus.NOT_FOUND, "Shape Not Found"),
     NO_TRIPS_FOUND_FOR_ROUTE(HttpStatus.NOT_FOUND, "No Trips For Route"),
     NO_JOURNEY_FOUND(HttpStatus.NOT_FOUND, "No Journey Found"),
