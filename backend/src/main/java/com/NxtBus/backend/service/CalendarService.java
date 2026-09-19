@@ -7,6 +7,8 @@ import java.util.Optional;
 
 public interface CalendarService {
 
+    void validateCalendarExists(String serviceId);
+
     Calendar saveCalendar(Calendar calendar);
 
     List<Calendar> getCalendarsByAgencyId(String agencyId);
