@@ -23,6 +23,13 @@ public class CalendarServiceImpl implements CalendarService {
     }
 
     @Override
+    public void validateCalendarExists(String serviceId) {
+        if (!calendarRepository.existsById(serviceId)) {
+            throw new CalendarNotFoundException(serviceId);
+        }
+    }
+
+    @Override
     @Transactional
     public Calendar saveCalendar(Calendar calendar) {
         agencyService.validateAgencyExists(calendar.getAgencyId());
