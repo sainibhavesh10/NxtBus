@@ -2,10 +2,9 @@ package com.nxtbus.backend.service.impl;
 
 import com.nxtbus.backend.entity.TripDate;
 import com.nxtbus.backend.exception.TripDateNotFoundException;
-import com.nxtbus.backend.exception.TripNotFoundException;
 import com.nxtbus.backend.repository.TripDateRepository;
-import com.nxtbus.backend.repository.TripRepository;
 import com.nxtbus.backend.service.TripDateService;
+import com.nxtbus.backend.service.TripService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,19 +16,17 @@ import java.util.Optional;
 public class TripDateServiceImpl implements TripDateService {
 
     private final TripDateRepository tripDateRepository;
-    private final TripRepository tripRepository;
+    private final TripService tripService;
 
-    public TripDateServiceImpl(TripDateRepository tripDateRepository, TripRepository tripRepository) {
+    public TripDateServiceImpl(TripDateRepository tripDateRepository, TripService tripService) {
         this.tripDateRepository = tripDateRepository;
-        this.tripRepository = tripRepository;
+        this.tripService = tripService;
     }
 
     @Override
     @Transactional
     public TripDate saveTripDate(TripDate tripDate) {
-        if (!tripRepository.existsById(tripDate.getTripId())) {
-            throw new TripNotFoundException(tripDate.getTripId());
-        }
+        tripService.validateTripExists(tripDate.getTripId());
         return tripDateRepository.save(tripDate);
     }
 
