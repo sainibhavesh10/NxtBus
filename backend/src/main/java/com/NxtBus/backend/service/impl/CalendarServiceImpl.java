@@ -1,10 +1,12 @@
 package com.nxtbus.backend.service.impl;
 
 import com.nxtbus.backend.entity.Calendar;
+import com.nxtbus.backend.event.CalendarChangedEvent;
 import com.nxtbus.backend.exception.CalendarNotFoundException;
 import com.nxtbus.backend.repository.CalendarRepository;
 import com.nxtbus.backend.service.AgencyService;
 import com.nxtbus.backend.service.CalendarService;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,24 +18,21 @@ public class CalendarServiceImpl implements CalendarService {
 
     private final CalendarRepository calendarRepository;
     private final AgencyService agencyService;
+    private final ApplicationEventPublisher events;
 
-    public CalendarServiceImpl(CalendarRepository calendarRepository, AgencyService agencyService) {
+    public CalendarServiceImpl(CalendarRepository calendarRepository, AgencyService agencyService, ApplicationEventPublisher events) {
         this.calendarRepository = calendarRepository;
         this.agencyService = agencyService;
-    }
-
-    @Override
-    public void validateCalendarExists(String serviceId) {
-        if (!calendarRepository.existsById(serviceId)) {
-            throw new CalendarNotFoundException(serviceId);
-        }
+        this.events = events;
     }
 
     @Override
     @Transactional
     public Calendar saveCalendar(Calendar calendar) {
         agencyService.validateAgencyExists(calendar.getAgencyId());
-        return calendarRepository.save(calendar);
+        Calendar saved = calendarRepository.save(calendar);
+        events.publishEvent(new CalendarChangedEvent(saved.getServiceId()));
+        return saved;
     }
 
     @Override
@@ -47,11 +46,17 @@ public class CalendarServiceImpl implements CalendarService {
     }
 
     @Override
-    @Transactional
-    public void deleteCalendar(String serviceId) {
+    public void validateCalendarExists(String serviceId) {
         if (!calendarRepository.existsById(serviceId)) {
             throw new CalendarNotFoundException(serviceId);
         }
+    }
+
+    @Override
+    @Transactional
+    public void deleteCalendar(String serviceId) {
+        validateCalendarExists(serviceId);
         calendarRepository.deleteById(serviceId);
+        events.publishEvent(new CalendarChangedEvent(serviceId));
     }
 }
