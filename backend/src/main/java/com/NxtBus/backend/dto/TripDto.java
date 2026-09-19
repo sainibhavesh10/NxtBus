@@ -36,4 +36,16 @@ public record TripDto(
                 view.getBlockId()
         );
     }
+
+    public Trip toEntity() {
+        Trip trip = new Trip();
+        trip.setTripId(this.tripId());
+        trip.setRouteId(this.routeId());
+        trip.setServiceId(this.serviceId());
+        trip.setShapeId(this.shapeId());
+        trip.setTripHeadsign(this.tripHeadsign());
+        trip.setDirectionId(this.directionId());
+        trip.setBlockId(this.blockId());
+        return trip;
+    }
 }
