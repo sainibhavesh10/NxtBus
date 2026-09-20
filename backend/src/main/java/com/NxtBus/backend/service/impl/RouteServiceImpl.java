@@ -2,10 +2,12 @@ package com.nxtbus.backend.service.impl;
 
 import com.nxtbus.backend.dto.RouteDto;
 import com.nxtbus.backend.entity.Route;
+import com.nxtbus.backend.exception.RouteAlreadyExistsException;
 import com.nxtbus.backend.exception.RouteNotFoundException;
 import com.nxtbus.backend.repository.RouteRepository;
 import com.nxtbus.backend.request.SearchRequest;
 import com.nxtbus.backend.service.RouteService;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -43,5 +45,21 @@ public class RouteServiceImpl implements RouteService {
         if (!routeRepository.existsById(routeId)) {
             throw new RouteNotFoundException(routeId);
         }
+    }
+
+    @Override
+    public void validateRouteDoesNotExist(String routeId) {
+        if (routeRepository.existsById(routeId)) {
+            throw new RouteAlreadyExistsException(routeId);
+        }
+    }
+
+    @Override
+    @Transactional
+    public RouteDto saveRoute(RouteDto routeDto) {
+        Route route = routeDto.toEntity();
+
+        Route saved = routeRepository.save(route);
+        return RouteDto.from(saved);
     }
 }

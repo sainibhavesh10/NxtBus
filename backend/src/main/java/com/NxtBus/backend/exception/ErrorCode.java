@@ -5,9 +5,11 @@ import org.springframework.http.HttpStatus;
 public enum ErrorCode {
 
     ROUTE_NOT_FOUND(HttpStatus.NOT_FOUND, "Route Not Found"),
+    ROUTE_ALREADY_EXISTS(HttpStatus.CONFLICT, "Route Already Exists"),
     STOP_NOT_FOUND(HttpStatus.NOT_FOUND, "Stop Not Found"),
     NO_STOP_NEAR_LOCATION(HttpStatus.NOT_FOUND, "No Stop Near Location"),
     TRIP_NOT_FOUND(HttpStatus.NOT_FOUND, "Trip Not Found"),
+    TRIP_ALREADY_EXISTS(HttpStatus.CONFLICT, "Trip Already Exists"),
     TRIP_DATE_NOT_FOUND(HttpStatus.NOT_FOUND, "Trip Date Not Found"),
     CALENDAR_NOT_FOUND(HttpStatus.NOT_FOUND, "Calendar Not Found"),
     CALENDAR_DATE_NOT_FOUND(HttpStatus.NOT_FOUND, "Calendar Date Not Found"),

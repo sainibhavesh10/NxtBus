@@ -80,6 +80,8 @@ public class StopTimeServiceImpl implements StopTimeService {
             }
         }
 
+        tripService.validateTripExists(tripDto.tripId());
+
         TripDto savedTrip = tripService.saveTrip(tripDto);
 
         List<StopTime> stopTimes = new ArrayList<>();

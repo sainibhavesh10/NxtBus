@@ -39,6 +39,13 @@ public class TripServiceImpl implements TripService {
     }
 
     @Override
+    public void validateTripDoesNotExist(String tripId) {
+        if (tripRepository.existsById(tripId)) {
+            throw new TripAlreadyExistsException(tripId);
+        }
+    }
+
+    @Override
     public void validateRouteHasTrips(String routeId) {
         if (!tripRepository.existsByRouteId(routeId)) {
             throw new NoTripsFoundForRouteException(routeId);

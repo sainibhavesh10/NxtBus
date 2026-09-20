@@ -36,4 +36,16 @@ public record RouteDto(
                 route.getRouteTextColor()
         );
     }
+
+    public Route toEntity() {
+        Route route = new Route();
+        route.setRouteId(this.routeId());
+        route.setAgencyId(this.agencyId());
+        route.setRouteShortName(this.routeShortName());
+        route.setRouteLongName(this.routeLongName());
+        route.setRouteType(this.routeType());
+        route.setRouteColor(this.routeColor());
+        route.setRouteTextColor(this.routeTextColor());
+        return route;
+    }
 }

@@ -1,15 +1,13 @@
 package com.nxtbus.backend.controller;
 
 import com.nxtbus.backend.dto.*;
+import com.nxtbus.backend.request.NewRouteRequest;
 import com.nxtbus.backend.request.PageRequestDto;
 import com.nxtbus.backend.request.SearchRequest;
 import com.nxtbus.backend.response.GeoJsonFeatureResponse;
 import com.nxtbus.backend.response.PagedResponse;
 import com.nxtbus.backend.response.RouteStopSequenceResponse;
-import com.nxtbus.backend.service.RouteService;
-import com.nxtbus.backend.service.ShapeService;
-import com.nxtbus.backend.service.StopTimeService;
-import com.nxtbus.backend.service.TripService;
+import com.nxtbus.backend.service.*;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
@@ -28,14 +26,18 @@ public class RoutesController {
 
     private final ShapeService shapeService;
 
+    private final RouteStopService routeStopService;
+
     public RoutesController(RouteService routeService,
                             TripService tripService,
                             StopTimeService stopTimeService,
-                            ShapeService shapeService){
+                            ShapeService shapeService,
+                            RouteStopService routeStopService){
         this.routeService = routeService;
         this.tripService = tripService;
         this.stopTimeService = stopTimeService;
         this.shapeService = shapeService;
+        this.routeStopService = routeStopService;
     }
 
     @GetMapping("/search")
@@ -78,5 +80,15 @@ public class RoutesController {
                 new RouteShapeProperties(route,shape.shapeId()),
                 shape.geom()
         );
+    }
+
+    @PostMapping
+    public RouteDto saveRoute(@RequestBody RouteDto routeDto) {
+        return routeService.saveRoute(routeDto);
+    }
+
+    @PostMapping("/with-stops")
+    public RouteDto createRouteWithStops(@RequestBody NewRouteRequest request) {
+        return routeStopService.createRouteWithStops(request.route(), request.stopIds());
     }
 }
