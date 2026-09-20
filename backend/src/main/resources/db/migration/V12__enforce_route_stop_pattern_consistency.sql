@@ -40,7 +40,7 @@ CREATE TRIGGER trg_prevent_trip_route_change
 -- 2. route_stop: the canonical, immutable stop pattern per route
 -- ============================================================
 CREATE TABLE route_stop (
-    route_id TEXT    NOT NULL REFERENCES routes(route_id),
+    route_id TEXT    NOT NULL REFERENCES routes(route_id) ON DELETE CASCADE,
     stop_seq INTEGER NOT NULL,
     stop_id  TEXT    NOT NULL REFERENCES stops(stop_id),
     PRIMARY KEY (route_id, stop_seq)
