@@ -1,6 +1,7 @@
 package com.nxtbus.backend.controller;
 
 import com.nxtbus.backend.dto.*;
+import com.nxtbus.backend.request.NewTripRequest;
 import com.nxtbus.backend.response.GeoJsonFeatureResponse;
 import com.nxtbus.backend.response.TripStopSequenceResponse;
 import com.nxtbus.backend.service.RouteService;
@@ -71,6 +72,11 @@ public class TripController {
     @PostMapping
     public TripDto saveTrip(@RequestBody TripDto tripDto) {
         return tripService.saveTrip(tripDto);
+    }
+
+    @PostMapping("/with-stops")
+    public TripDto createTripWithStopTimes(@RequestBody NewTripRequest request) {
+        return stopTimeService.createTripWithStopTimes(request.trip(), request.stops());
     }
 
     @DeleteMapping("/{tripId}")

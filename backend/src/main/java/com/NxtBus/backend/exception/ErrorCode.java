@@ -16,6 +16,7 @@ public enum ErrorCode {
     NO_TRIPS_FOUND_FOR_ROUTE(HttpStatus.NOT_FOUND, "No Trips For Route"),
     NO_JOURNEY_FOUND(HttpStatus.NOT_FOUND, "No Journey Found"),
     INDEX_NOT_READY(HttpStatus.SERVICE_UNAVAILABLE, "Index Not Ready"),
+    STOP_PATTERN_MISMATCH(HttpStatus.BAD_REQUEST, "Stop Pattern Mismatch"),
     VALIDATION_FAILED(HttpStatus.BAD_REQUEST, "Validation Failed"),
     CORRUPT_SCHEDULE_DATA(HttpStatus.INTERNAL_SERVER_ERROR, "Corrupt Schedule Data"),
     INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error");
