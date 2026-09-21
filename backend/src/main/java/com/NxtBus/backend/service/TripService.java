@@ -8,6 +8,8 @@ public interface TripService {
 
     void validateTripExists(String tripId);
 
+    void validateTripDoesNotExist(String tripId);
+
     void validateRouteHasTrips(String routeId);
 
     TripDto getTripById(String tripId);

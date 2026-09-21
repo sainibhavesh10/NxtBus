@@ -12,4 +12,8 @@ public interface RouteService {
     RouteDto getRouteById(String routeId);
 
     void validateRouteExists(String routeId);
+
+    void validateRouteDoesNotExist(String routeId);
+
+    RouteDto saveRoute(RouteDto routeDto);
 }

@@ -5,9 +5,11 @@ import org.springframework.http.HttpStatus;
 public enum ErrorCode {
 
     ROUTE_NOT_FOUND(HttpStatus.NOT_FOUND, "Route Not Found"),
+    ROUTE_ALREADY_EXISTS(HttpStatus.CONFLICT, "Route Already Exists"),
     STOP_NOT_FOUND(HttpStatus.NOT_FOUND, "Stop Not Found"),
     NO_STOP_NEAR_LOCATION(HttpStatus.NOT_FOUND, "No Stop Near Location"),
     TRIP_NOT_FOUND(HttpStatus.NOT_FOUND, "Trip Not Found"),
+    TRIP_ALREADY_EXISTS(HttpStatus.CONFLICT, "Trip Already Exists"),
     TRIP_DATE_NOT_FOUND(HttpStatus.NOT_FOUND, "Trip Date Not Found"),
     CALENDAR_NOT_FOUND(HttpStatus.NOT_FOUND, "Calendar Not Found"),
     CALENDAR_DATE_NOT_FOUND(HttpStatus.NOT_FOUND, "Calendar Date Not Found"),
@@ -16,6 +18,7 @@ public enum ErrorCode {
     NO_TRIPS_FOUND_FOR_ROUTE(HttpStatus.NOT_FOUND, "No Trips For Route"),
     NO_JOURNEY_FOUND(HttpStatus.NOT_FOUND, "No Journey Found"),
     INDEX_NOT_READY(HttpStatus.SERVICE_UNAVAILABLE, "Index Not Ready"),
+    STOP_PATTERN_MISMATCH(HttpStatus.BAD_REQUEST, "Stop Pattern Mismatch"),
     VALIDATION_FAILED(HttpStatus.BAD_REQUEST, "Validation Failed"),
     CORRUPT_SCHEDULE_DATA(HttpStatus.INTERNAL_SERVER_ERROR, "Corrupt Schedule Data"),
     INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error");

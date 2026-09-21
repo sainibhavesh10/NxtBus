@@ -165,7 +165,8 @@ CREATE TABLE IF NOT EXISTS stop_times (
 
     CONSTRAINT fk_stop_times_trip
         FOREIGN KEY (trip_id)
-        REFERENCES trips (trip_id),
+        REFERENCES trips (trip_id)
+        ON DELETE CASCADE,
 
     CONSTRAINT fk_stop_times_stop
         FOREIGN KEY (stop_id)
